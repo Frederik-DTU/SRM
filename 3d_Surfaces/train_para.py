@@ -28,7 +28,7 @@ generate_data = False
 try_cuda = False
 save_step = 100
 
-epochs = 1000#100000
+epochs = 100000
 batch_size = 100
 lr = 0.0001#0.0001
 
@@ -39,7 +39,7 @@ if try_cuda:
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 else:
     device = 'cpu'
-    
+
 dat = data_obj.read_data()
 
 #trainloader = DataLoader( dataset = dat , batch_size= batch_size , shuffle = False)
@@ -50,7 +50,7 @@ model = VAE_3d_surface(device = device).to(device)
 
 def loss_fun(x_rec, x, mu, var):
     """
-    This function will add the reconstruction loss (BCELoss) and the 
+    This function will add the reconstruction loss (BCELoss) and the
     KL-Divergence.
     KL-Divergence = 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
     :param bce_loss: recontruction loss
@@ -58,7 +58,7 @@ def loss_fun(x_rec, x, mu, var):
     :param logvar: log variance from the latent vector
     """
     logvar = torch.log(var)
-    BCE = reconstruction_function(x_rec, x) 
+    BCE = reconstruction_function(x_rec, x)
     KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
     # KL divergence
     return BCE + KLD
@@ -77,7 +77,7 @@ for epoch in range(epochs):
         loss.backward(retain_graph=True)
         running_loss += loss.item()
         optimizer.step()
-        
+
     train_epoch_loss = running_loss/len(trainloader.dataset)
     #print(f"Epoch {epoch+1}/{epochs} - loss: {train_epoch_loss:.4f}")
     train_loss.append(train_epoch_loss)
@@ -86,7 +86,7 @@ for epoch in range(epochs):
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
             'loss': train_loss
-            }, 'para_3d.pt')
+            }, file_model_save)
 
 
 torch.save({'epoch': epoch,

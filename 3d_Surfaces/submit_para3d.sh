@@ -3,10 +3,10 @@
 #BSUB -gpu "num=1"
 #BSUB -J para_3d
 #BSUB -n 1
-#BSUB -W 24:00
+#BSUB -W 1:00
 #BSUB -R "rusage[mem=32GB]"
 #BSUB -u s164222@student.dtu.dk
-#BSUB -o outputs/output_%J.out
+#BSUB -o output/output_%J.out
 #BSUB -e error/error_%J.err
 #BSUB -B
 #BSUB -N
@@ -16,6 +16,6 @@
 module swap cuda/8.0
 module swap cudnn/v7.0-prod-cuda8
 
-python3 para_3d_hpc.py
+python3 train_para.py
 
 #myapplication.x < input.in > output.out
