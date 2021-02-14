@@ -25,7 +25,7 @@ file_path_name = 'Data/para_data.csv'
 file_model_save = 'trained_models/para_3d.pt'
 data_obj = sim_3d_fun(N_sim=50000, name_path = file_path_name)
 generate_data = False
-try_cuda = False
+try_cuda = True
 save_step = 100
 
 epochs = 100000
