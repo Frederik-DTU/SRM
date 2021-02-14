@@ -28,7 +28,7 @@ generate_data = False
 try_cuda = False
 save_step = 100
 
-epochs = 400#100000
+epochs = 1000#100000
 batch_size = 100
 lr = 0.0001#0.0001
 
@@ -42,6 +42,7 @@ else:
     
 dat = data_obj.read_data()
 
+#trainloader = DataLoader( dataset = dat , batch_size= batch_size , shuffle = False)
 trainloader = DataLoader( dataset = dat , batch_size= batch_size , shuffle = True)
 reconstruction_function = nn.MSELoss(reduction='sum')
 
@@ -78,7 +79,7 @@ for epoch in range(epochs):
         optimizer.step()
         
     train_epoch_loss = running_loss/len(trainloader.dataset)
-    print(f"Epoch {epoch+1}/{epochs} - loss: {train_epoch_loss:.4f}")
+    #print(f"Epoch {epoch+1}/{epochs} - loss: {train_epoch_loss:.4f}")
     train_loss.append(train_epoch_loss)
     if epoch % save_step == 0:
         torch.save({'epoch': epoch,

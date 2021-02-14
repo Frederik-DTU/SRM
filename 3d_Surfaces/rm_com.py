@@ -122,6 +122,10 @@ class riemannian_dgm:
             j += 1
             loss.append(grad_E)
             print(f"Iteration {j}/{max_iter} - Gradient_E: {grad_E:.8f}")
+            if (j>1):
+                if (loss[-1]>loss[-2]):
+                    print("The Gradient is increasing. The algorithm has been Stopped! Correct alpha!")
+                    break
         
         g_old = self.get_gList(self.z_list, gz0=gz0, gzT = gzT)
         g_new = self.get_gList(z_new, gz0=gz0, gzT = gzT)

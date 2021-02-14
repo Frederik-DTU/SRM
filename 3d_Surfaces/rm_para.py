@@ -64,7 +64,7 @@ zy = model.get_encoded(y) #zy as noted in article
 
 rm = riemannian_dgm(zx, zy, T, 2, 3, model.get_encoded, model.get_decoded, 100) #Defining class
 
-loss, z_old, g_old, g_new, z_new = rm.geodesic_path_al1(alpha = 0.01, eps = 0.1) #Algorithm 1 in article
+loss, z_old, g_old, g_new, z_new = rm.geodesic_path_al1(alpha = 0.05, eps = 0.1) #Algorithm 1 in article
 
 z_old = rm.get_list_to_torch(z_old, [0,1]) #Converting list to tensors in matrix-like format
 z_new = rm.get_list_to_torch(z_new, [0,1]) #Converting list to tensors in matrix-like format
