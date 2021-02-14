@@ -13,13 +13,14 @@ import numpy as np
 #https://gist.github.com/sbarratt/37356c46ad1350d4c30aefbd488a4faa
 
 class riemannian_dgm:
-    def __init__(self, z0, zT, T, n_h, n_g, fun_h, fun_g):
+    def __init__(self, z0, zT, T, n_h, n_g, fun_h, fun_g, max_iter=1000):
       self.T = T
       self.fun_h = fun_h
       self.fun_g = fun_g
       self.n_h = n_h
       self.n_g = n_g
       self.z_list = self.interpolate(z0, zT)
+      self.max_iter = max_iter
 
     
     def interpolate(self, z0,zT):
@@ -71,6 +72,15 @@ class riemannian_dgm:
             
         return glist
     
+    def get_list_to_torch(self, zlist, idx):
+        
+        z = torch.empty(self.T+1, len(idx))
+        
+        for i in range(0, self.T+1):
+            z[i] = zlist[i][idx]
+        
+        return z
+    
     def energy_fun(self, g_list):
         
         res = 0.0
@@ -82,116 +92,41 @@ class riemannian_dgm:
         
         return res
     
-    def get_list_to_torch(self, zlist, idx):
-        
-        z = torch.empty(self.T+1, len(idx))
-        
-        for i in range(0, self.T+1):
-            z[i] = zlist[i][idx]
-        
-        return z
-    
-    def obj_al1(self, alpha, g):
-        
-        z_path = self.z_list[:]
-        grad_E = 0.0
-        alpha = torch.tensor(alpha, dtype=torch.float32)
-                
-        for i in range(1, self.T):
-                
-            #Equation (5) in article:
-            jacobian_g = self.get_jacobian(self.fun_g, z_path[i], n_out=self.n_g)
-            eta_g = -self.T*torch.mv(torch.transpose(jacobian_g, 0, 1),g[i+1]-2*g[i]+g[i-1])
-            
-            #Equation (6) in article
-            #jacobian_h = self.get_jacobian(self.fun_h, g[i], n_out=self.n_h)
-            #eta_g = -self.T*torch.mv(jacobian_h,g[i+1]-2*g[i]+g[i-1])
-            
-            z_path[i] = z_path[i]-alpha*eta_g
-            grad_E += torch.norm(eta_g)
-        
-        g_old = self.get_gList(self.z_list, gz0=g[0], gzT = g[-1])
-        g_new = self.get_gList(z_path, gz0=g[0], gzT = g[-1])
-        E_old = self.energy_fun(g_old)
-        E_new = self.energy_fun(g_new)
-    
-            
-        return (E_new-E_old).detach().numpy().astype(np.float64)
-    
-    def get_iter_al1(self, g, bnds = [(0,1)], alpha0=0.5):
-        
-        sol = minimize(self.obj_al1, alpha0, method = 'SLSQP', bounds = bnds, args = (g))
-        
-        #sol = minimize(self.obj_al1, alpha0, jac=True, method='L-BFGS-B', bounds = bnds, args = (g))
-        
-        return sol.x
-    
-    def line_search_alpha_al1(self, g, bnds = [0,1], max_steps=1000):
-        
-        lb = bnds[0]
-        ub = bnds[1]
-        alpha0 =(lb+ub)/2
-        E_ub = self.obj_al1(ub, g)
-        if (E_ub<0):
-            return ub
-        E_alpha0 = self.obj_al1(alpha0, g)
-        
-        for i in range(0, max_steps):
-            print(alpha0)
-            E_alpha0 = self.obj_al1(alpha0, g)
-            
-            if (E_alpha0<0):
-                alpha = alpha0
-                break
-            else:
-                ub = alpha0
-                alpha0 = (lb+ub)/2
-                
-        return alpha
-    
     def geodesic_path_al1(self, alpha = 1, eps = 0.01):
     
         grad_E = eps+1
-        #grad_prev = math.inf
-        #delta = 1/self.T
-        z_path = self.z_list[:]
+        j = 0
+        z_new = self.z_list[:]
+        max_iter = self.max_iter
                 
-        gz0 = self.fun_g(z_path[0])
-        gzT = self.fun_g(z_path[-1])
+        gz0 = self.fun_g(z_new[0])
+        gzT = self.fun_g(z_new[-1])
         
-        g = self.get_gList(z_path, gz0=gz0, gzT = gzT)
-        #alpha_test = self.get_iter_al1(g)
-        #alpha_test = self.line_search_alpha_al1(g)
-        #alpha = torch.tensor(alpha_test, dtype=torch.float32)
-        #print(alpha_test)
-        
-        #g_old = self.get_gList(self.z_list, gz0=gz0, gzT = gzT)
-        #E_old = self.energy_fun(g_old)
-        #print(E_old)
+        loss = []
                 
-        while grad_E>eps:
-            print(grad_E)
+        while (grad_E>eps and j<=max_iter):
             grad_E = 0.0
-            g = self.get_gList(z_path, gz0=gz0, gzT = gzT)
+            g = self.get_gList(z_new, gz0=gz0, gzT = gzT)
             for i in range(1, self.T):
                 
                 #Equation (5) in article:
-                #jacobian_g = self.get_jacobian(self.fun_g, z_path[i], n_out=self.n_g)
+                #jacobian_g = self.get_jacobian(self.fun_g, z_new[i], n_out=self.n_g)
                 #eta_g = -self.T*torch.mv(torch.transpose(jacobian_g, 0, 1),g[i+1]-2*g[i]+g[i-1])
                 
                 #Equation (6) in article
                 jacobian_h = self.get_jacobian(self.fun_h, g[i], n_out=self.n_h)
                 eta_g = -self.T*torch.mv(jacobian_h,g[i+1]-2*g[i]+g[i-1])
                 
-                z_path[i] = z_path[i]-alpha*eta_g
+                z_new[i] = z_new[i]-alpha*eta_g
                 grad_E += torch.norm(eta_g)
+            j += 1
+            loss.append(grad_E)
+            print(f"Iteration {j}/{max_iter} - Gradient_E: {grad_E:.8f}")
         
         g_old = self.get_gList(self.z_list, gz0=gz0, gzT = gzT)
-        g_new = self.get_gList(z_path, gz0=gz0, gzT = gzT)
-        E_old = self.energy_fun(g_old)
-        E_new = self.energy_fun(g_new)
+        g_new = self.get_gList(z_new, gz0=gz0, gzT = gzT)
         
-        return E_old, E_new, z_path
+        return loss, self.z_list, g_old, g_new, z_new
     
     def parallel_translation_al2(self, z_list, v0):
         

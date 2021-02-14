@@ -33,7 +33,7 @@ class VAE_3d_surface(nn.Module):
                  fc_g_act: List[Any] = [nn.ELU, nn.Identity],
                  fc_mu_act: List[Any] = [nn.Identity],
                  fc_var_act: List[Any] = [nn.Sigmoid],
-                 device = 'cuda'
+                 device: str = 'cuda'
                  ):
         super(VAE_3d_surface, self).__init__()
     
@@ -127,9 +127,9 @@ class VAE_3d_surface(nn.Module):
         x = self.h(x)
         mu = self.mu_net(x)
         var = self.var_net(x)
-        z = self.reparameterize(mu, var)
+        #z = self.reparameterize(mu, var)
         
-        return z
+        return mu
         
 #Simple test
 #vae = para_VAE()
