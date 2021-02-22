@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Jan 27 23:11:39 2021
+Created on Sun Feb 21 01:13:39 2021
 
 @author: Frederik
 """
+# -*- coding: utf-8 -*-
 
 import torch
 from scipy.optimize import minimize

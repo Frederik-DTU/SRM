@@ -19,7 +19,12 @@ from VAE_test import vae_para_test
 #https://debuggercafe.com/getting-started-with-variational-autoencoder-using-pytorch/
 #http://adamlineberry.ai/vae-series/vae-code-experiments
 #https://gist.github.com/sbarratt/37356c46ad1350d4c30aefbd488a4faa
-#https://stats.stackexchange.com/questions/341954/balancing-reconstruction-vs-kl-loss-variational-autoencoder
+
+#%% Data generator
+
+def x3_fun(x1, x2):
+    
+    return 0*x1
 
 #%% Training
 
@@ -29,14 +34,14 @@ from VAE_test import vae_para_test
 #        m.bias.data.fill_(0.01)
 
 test_model = False
-file_path_name = 'Data/para_data.csv'
-file_model_save = 'trained_models/para_3d.pt'
-data_obj = sim_3d_fun(N_sim=50000, name_path = file_path_name)
+file_path_name = 'Data/surface_R2.csv'
+file_model_save = 'trained_models/surface_R2.pt'
+data_obj = sim_3d_fun(N_sim=50000, name_path = file_path_name, x3_fun = x3_fun)
 generate_data = False
 try_cuda = False
-save_step = 1000
+save_step = 100
 beta = 1
-alpha = 3
+alpha = 1
 
 epochs = 1000 #100000
 if epochs==0:
@@ -54,14 +59,14 @@ else:
 
 dat = (data_obj.read_data()).to(device)
 
-batch_size = 100 #100
+batch_size = 100
 if try_cuda:
     trainloader = DataLoader(dataset = dat , batch_size= batch_size , shuffle = True,
                              num_workers = 4)
 else:
     trainloader = DataLoader(dataset = dat , batch_size= batch_size , shuffle = True)
 
-rec_fun = nn.MSELoss(reduction='mean')
+rec_fun = nn.MSELoss(reduction='sum')
 
 if test_model:
     model = vae_para_test(device = device).to(device)
@@ -80,7 +85,7 @@ def loss_fun(x_rec, x, mu, var):
     """
     logvar = torch.log(var)
     BCE = rec_fun(x_rec, x)
-    KLD = torch.mean(-0.5 * torch.sum(1 + logvar - mu**2 - var, dim = 1), dim = 0)
+    KLD = torch.sum(-0.5 * torch.sum(1 + logvar - mu**2 - var, dim = 1), dim = 0)
     # KL divergence
     return alpha*BCE, beta*KLD, alpha*BCE + beta*KLD
 

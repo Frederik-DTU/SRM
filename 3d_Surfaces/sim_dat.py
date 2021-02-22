@@ -31,19 +31,17 @@ class sim_3d_fun(object):
                  x2_fun = x2_fun, 
                  x3_fun = x3_fun,
                  N_sim = 50000,
-                 name_path = 'para_data.csv',
-                 seed = 100):
+                 name_path = 'para_data.csv'):
         
         self.x1_fun = x1_fun
         self.x2_fun = x2_fun
         self.x3_fun = x3_fun
         self.N_sim = N_sim
         self.name_path = name_path
-        self.seed = seed
         
     def sim_3d(self):
     
-        np.random.seed(self.seed)
+        #np.random.seed(self.seed)
         x1 = self.x1_fun(self.N_sim)
         x2 = self.x2_fun(self.N_sim)
         

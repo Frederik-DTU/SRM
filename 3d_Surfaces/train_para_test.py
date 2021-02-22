@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader
 #Own files
 from VAE_3d import VAE_3d_surface
 from sim_dat import sim_3d_fun
-from VAE_test import vae_para_test
+from VAE_test import vae_para_test, VAE_prob
 
 #Sources:
 #https://debuggercafe.com/getting-started-with-variational-autoencoder-using-pytorch/
@@ -28,15 +28,13 @@ from VAE_test import vae_para_test
 #        torch.nn.init.xavier_uniform(m.weight)
 #        m.bias.data.fill_(0.01)
 
-test_model = False
+test_model = True
 file_path_name = 'Data/para_data.csv'
 file_model_save = 'trained_models/para_3d.pt'
 data_obj = sim_3d_fun(N_sim=50000, name_path = file_path_name)
 generate_data = False
 try_cuda = False
 save_step = 1000
-beta = 1
-alpha = 3
 
 epochs = 1000 #100000
 if epochs==0:
@@ -64,25 +62,9 @@ else:
 rec_fun = nn.MSELoss(reduction='mean')
 
 if test_model:
-    model = vae_para_test(device = device).to(device)
+    model = VAE_prob(device = device).to(device)
 else:
     model = VAE_3d_surface(device = device).to(device)
-
-#model.apply(init_weights)
-def loss_fun(x_rec, x, mu, var):
-    """
-    This function will add the reconstruction loss (MSELoss) and the
-    KL-Divergence.
-    KL-Divergence = 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
-    :param bce_loss: recontruction loss
-    :param mu: the mean from the latent vector
-    :param logvar: log variance from the latent vector
-    """
-    logvar = torch.log(var)
-    BCE = rec_fun(x_rec, x)
-    KLD = torch.mean(-0.5 * torch.sum(1 + logvar - mu**2 - var, dim = 1), dim = 0)
-    # KL divergence
-    return alpha*BCE, beta*KLD, alpha*BCE + beta*KLD
 
 optimizer = optim.SGD(model.parameters(), lr=lr)
 
@@ -96,11 +78,11 @@ for epoch in range(epochs):
     running_loss_kld = 0.0
     for x in trainloader:
         x = x.to(device)
-        _, x_rec, mu, var = model(x)
-        loss = loss_fun(x_rec, x, mu, var)
-        running_loss_bce += loss[0]
-        running_loss_kld += loss[1]
-        loss = loss[2]
+        _, x_hat, mu, var, elbo = model(x)
+        loss = elbo
+        running_loss_bce += elbo
+        running_loss_kld += elbo
+        loss = elbo
         optimizer.zero_grad()
         loss.backward()
         running_loss_tot += loss.item()

@@ -45,6 +45,27 @@ class plot_3d_fun(object):
         
         return
     
+    def plot_dat_in_Z_2d(self, *args):
+        
+        fig = plt.figure(figsize=self.fig_size)
+        
+        for arg in args:
+            lab = arg[1]
+            x = arg[0][:,0]
+            y = arg[0][:,1]
+            plt.plot(x, y, 'o', label=lab)
+            
+        plt.xlabel('x1')
+        plt.ylabel('x2')
+        plt.grid()
+        plt.legend()
+        plt.title('Z-space')
+        
+        plt.tight_layout()
+
+        
+        plt.show()
+    
     def plot_geodesic_in_X_3d(self, x1_grid, x2_grid, *args):
         
         fig = plt.figure(figsize=self.fig_size)
@@ -56,7 +77,7 @@ class plot_3d_fun(object):
         X1, X2 = np.meshgrid(x1_grid, x2_grid)
         X3 = self.fun(X1, X2)
         ax.plot_surface(
-        X1, X2, X3,  rstride=1, cstride=1, color='c', alpha=1.0, linewidth=0)
+        X1, X2, X3,  rstride=1, cstride=1, color='c', alpha=0.2, linewidth=0)
         
         for arg in args:
             lab = arg[1]
@@ -137,7 +158,7 @@ class plot_3d_fun(object):
         
         plt.show()
         
-    def plot_loss(self, loss):
+    def plot_loss(self, loss, title='Loss function'):
         
         fig = plt.figure(figsize=self.fig_size)
         
@@ -146,7 +167,7 @@ class plot_3d_fun(object):
         plt.xlabel('Epoch')
         plt.ylabel('Loss')
         plt.grid()
-        plt.title('Loss function')
+        plt.title(title)
         
         plt.tight_layout()
         

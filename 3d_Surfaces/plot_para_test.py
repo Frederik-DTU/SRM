@@ -12,7 +12,7 @@ import torch.optim as optim
 from VAE_3d import VAE_3d_surface
 from plot_dat import plot_3d_fun
 from sim_dat import sim_3d_fun
-from VAE_test import vae_para_test
+from VAE_test import vae_para_test, VAE_prob
 
 
 #Sources:
@@ -22,7 +22,7 @@ from VAE_test import vae_para_test
 
 #%% Plotting
 
-test_model = False
+test_model = True
 file_path_name = 'Data/para_data.csv'
 file_model_save = 'trained_models/para_3d.pt'
 data_obj = sim_3d_fun(N_sim=50000, name_path = file_path_name)
@@ -57,7 +57,7 @@ if plot_data:
 
 if load_trained_model:
     if test_model:
-        model = vae_para_test(device = device).to(device)
+        model = VAE_prob(device = device).to(device)
     else:
         model = VAE_3d_surface(device = device).to(device)
     optimizer = optim.SGD(model.parameters(), lr=lr)

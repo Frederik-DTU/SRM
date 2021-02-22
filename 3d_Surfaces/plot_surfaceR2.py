@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 """
+Created on Sat Feb 20 12:34:27 2021
+
+@author: Frederik
+"""
+# -*- coding: utf-8 -*-
+"""
 Created on Sun Feb 14 00:29:19 2021
 
 @author: Frederik
@@ -20,13 +26,19 @@ from VAE_test import vae_para_test
 #http://adamlineberry.ai/vae-series/vae-code-experiments
 #https://gist.github.com/sbarratt/37356c46ad1350d4c30aefbd488a4faa
 
+#%% Data generator
+
+def x3_fun(x1, x2):
+    
+    return 0*x1
+
 #%% Plotting
 
 test_model = False
-file_path_name = 'Data/para_data.csv'
-file_model_save = 'trained_models/para_3d.pt'
-data_obj = sim_3d_fun(N_sim=50000, name_path = file_path_name)
-data_plot = plot_3d_fun(N_grid=100)
+file_path_name = 'Data/surface_R2.csv'
+file_model_save = 'trained_models/surface_R2.pt'
+data_obj = sim_3d_fun(N_sim=50000, name_path = file_path_name, x3_fun = x3_fun)
+data_plot = plot_3d_fun(N_grid=100, fun=x3_fun)
 generate_data = False
 load_trained_model = True
 plot_data = True
