@@ -33,10 +33,10 @@ file_path_name = 'Data/para_data.csv'
 file_model_save = 'trained_models/para_3d.pt'
 data_obj = sim_3d_fun(N_sim=50000, name_path = file_path_name)
 generate_data = False
-try_cuda = False
+try_cuda = True
 save_step = 1000
 
-epochs = 1000 #100000
+epochs = 100000 #100000
 if epochs==0:
     epoch=0
 batch_size = 100
@@ -54,8 +54,7 @@ dat = (data_obj.read_data()).to(device)
 
 batch_size = 100 #100
 if try_cuda:
-    trainloader = DataLoader(dataset = dat , batch_size= batch_size , shuffle = True,
-                             num_workers = 4)
+    trainloader = DataLoader(dataset = dat , batch_size= batch_size , shuffle = True)
 else:
     trainloader = DataLoader(dataset = dat , batch_size= batch_size , shuffle = True)
 
@@ -92,7 +91,7 @@ for epoch in range(epochs):
     train_loss_tot.append(train_epoch_loss)
     train_loss_bce.append(running_loss_bce/len(trainloader.dataset))
     train_loss_kld.append(running_loss_kld/len(trainloader.dataset))
-    print(f"Epoch {epoch+1}/{epochs} - loss: {train_epoch_loss:.4f}")
+    #print(f"Epoch {epoch+1}/{epochs} - loss: {train_epoch_loss:.4f}")
     if epoch % save_step == 0:
         torch.save({'epoch': epoch,
             'model_state_dict': model.state_dict(),

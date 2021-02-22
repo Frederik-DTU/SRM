@@ -3,7 +3,7 @@
 #BSUB -gpu "num=1"
 #BSUB -J para_3d
 #BSUB -n 1
-#BSUB -W 1:00
+#BSUB -W 24:00
 #BSUB -R "rusage[mem=32GB]"
 #BSUB -u s164222@student.dtu.dk
 #BSUB -o output/output_%J.out
