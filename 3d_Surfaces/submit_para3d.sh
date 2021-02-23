@@ -18,8 +18,8 @@ module swap cudnn/v7.0-prod-cuda8
 
 python3 train_surface3d.py \
     --data_path Data/para_data.csv \
-    --save_model_path trained_models/para_3d.pt \
-    --save_step 1000 \
+    --save_model_path trained_models_hpc/para_3d \
+    --save_step 5000 \
     --device cuda \
     --epochs 100000 \
     --batch_size 100 \

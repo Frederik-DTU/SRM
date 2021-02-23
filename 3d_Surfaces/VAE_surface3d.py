@@ -51,15 +51,15 @@ class VAE_3d(nn.Module):
         self.num_fc_mu = len(fc_h)
         self.num_fc_var = len(fc_h)
         
-        self.h = self.encoder()
-        self.g = self.decoder()
+        self.encoder = self.encode()
         self.mu_net = self.mu_layer()
         self.var_net = self.var_layer()
+        self.decoder = self.decode()
         
         # for the gaussian likelihood
         self.log_scale = nn.Parameter(torch.Tensor([0.0]))
     
-    def encoder(self):
+    def encode(self):
         
         layer = []
         
@@ -97,7 +97,7 @@ class VAE_3d(nn.Module):
         z = mu + (eps * std)
         return z
         
-    def decoder(self):
+    def decode(self):
         
         layer = []
         
@@ -137,10 +137,10 @@ class VAE_3d(nn.Module):
     
     def forward(self, x):
         
-        x_encoded = self.h(x)
+        x_encoded = self.encoder(x)
         mu, var = self.mu_net(x_encoded), self.var_net(x_encoded)
         z = self.rep_par(mu, var)
-        x_hat = self.g(z)
+        x_hat = self.decoder(z)
         
         std = torch.sqrt(var)
         

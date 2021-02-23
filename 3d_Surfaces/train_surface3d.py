@@ -12,7 +12,8 @@ Sources:
 https://debuggercafe.com/getting-started-with-variational-autoencoder-using-pytorch/
 http://adamlineberry.ai/vae-series/vae-code-experiments
 https://gist.github.com/sbarratt/37356c46ad1350d4c30aefbd488a4faa
-
+https://discuss.pytorch.org/t/cpu-ram-usage-increasing-for-every-epoch/24475/10
+https://pytorch.org/tutorials/recipes/recipes/tuning_guide.html
 """
 
 #%% Modules
@@ -33,7 +34,7 @@ def parse_args():
     # File-paths
     parser.add_argument('--data_path', default='Data/para_data.csv', # 'Data/surface_R2.csv'
                         type=str)
-    parser.add_argument('--save_model_path', default='trained_models/para_3d.pt', #'trained_models/surface_R2.pt'
+    parser.add_argument('--save_model_path', default='trained_models/para_3d', #'trained_models/surface_R2.pt'
                         type=str)
     parser.add_argument('--save_step', default=100,
                         type=int)
@@ -41,7 +42,7 @@ def parse_args():
     #Hyper-parameters
     parser.add_argument('--device', default='cpu', #'cuda:0'
                         type=str)
-    parser.add_argument('--epochs', default=100, #100000
+    parser.add_argument('--epochs', default=10, #100000
                         type=int)
     parser.add_argument('--batch_size', default=100,
                         type=int)
@@ -68,7 +69,7 @@ def main():
 
     if args.device == 'cpu':
         trainloader = DataLoader(dataset = DATA, batch_size= args.batch_size,
-                                 shuffle = True)
+                                 shuffle = True, pin_memory=True, num_workers = 0)
     else:
         trainloader = DataLoader(dataset = DATA, batch_size= args.batch_size,
                                  shuffle = True, pin_memory=True, num_workers=2)
@@ -78,46 +79,50 @@ def main():
 
     optimizer = optim.SGD(model.parameters(), lr=args.lr)
 
+    model.train()
     for epoch in range(epochs):
-        model.train()
         running_loss_elbo = 0.0
         running_loss_rec = 0.0
         running_loss_kld = 0.0
         for x in trainloader:
             x = x.to(args.device)
             _, x_hat, mu, var, kld, rec_loss, elbo = model(x)
-            optimizer.zero_grad()
+            optimizer.zero_grad(set_to_none=True) #Based on performance tuning
             elbo.backward()
-            running_loss_elbo += elbo.item()
             optimizer.step()
 
-            running_loss_rec += rec_loss
-            running_loss_kld += kld
+            running_loss_elbo += elbo.item()
+            running_loss_rec += rec_loss.item()
+            running_loss_kld += kld.item()
 
-            del x, x_hat, mu, var, kld, rec_loss, elbo #In case you run out of memory
+            #del x, x_hat, mu, var, kld, rec_loss, elbo #In case you run out of memory
 
         train_epoch_loss = running_loss_elbo/N
         train_loss_elbo.append(train_epoch_loss)
         train_loss_rec.append(running_loss_rec/N)
         train_loss_kld.append(running_loss_kld/N)
-        #print(f"Epoch {epoch+1}/{epochs} - loss: {train_epoch_loss:.4f}")
-        if epoch % args.save_step == 0:
-            torch.save({'epoch': epoch,
+        print(f"Epoch {epoch+1}/{epochs} - loss: {train_epoch_loss:.4f}")
+        
+        
+        if (epoch+1) % args.save_step == 0:
+            checkpoint = args.save_model_path+'_epoch_'+str(epoch+1)+'.pt'
+            torch.save({'epoch': epoch+1,
                 'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
                 'ELBO': train_loss_elbo,
                 'rec_loss': train_loss_rec,
                 'KLD': train_loss_kld
-                }, args.save_model_path)
+                }, checkpoint)
 
 
-    torch.save({'epoch': epoch,
+    checkpoint = args.save_model_path+'_epoch_'+str(epoch+1)+'.pt'
+    torch.save({'epoch': epoch+1,
                 'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
                 'ELBO': train_loss_elbo,
                 'rec_loss': train_loss_rec,
                 'KLD': train_loss_kld
-                }, args.save_model_path)
+                }, checkpoint)
 
     return
 
