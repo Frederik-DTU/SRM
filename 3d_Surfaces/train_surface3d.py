@@ -35,17 +35,17 @@ def parse_args():
                         type=str)
     parser.add_argument('--save_model_path', default='trained_models/para_3d.pt', #'trained_models/surface_R2.pt'
                         type=str)
-    parser.add_argument('--save_step', default=100, 
+    parser.add_argument('--save_step', default=100,
                         type=int)
-    
+
     #Hyper-parameters
-    parser.add_argument('--device', default='cpu', #'cuda:0' 
+    parser.add_argument('--device', default='cpu', #'cuda:0'
                         type=str)
     parser.add_argument('--epochs', default=100, #100000
                         type=int)
-    parser.add_argument('--batch_size', default=100, 
+    parser.add_argument('--batch_size', default=100,
                         type=int)
-    parser.add_argument('--lr', default=0.0001, 
+    parser.add_argument('--lr', default=0.0001,
                         type=float)
 
 
@@ -55,7 +55,7 @@ def parse_args():
 #%% Main loop
 
 def main():
-    
+
     args = parse_args()
     train_loss_elbo = [] #Elbo loss
     train_loss_rec = [] #Reconstruction loss
@@ -65,15 +65,19 @@ def main():
     df = pd.read_csv(args.data_path, index_col=0)
     DATA = torch.Tensor(df.values)
     DATA = torch.transpose(DATA, 0, 1)
-    
-    trainloader = DataLoader(dataset = DATA, batch_size= args.batch_size, 
-                             shuffle = True)
+
+    if args.device == 'cpu':
+        trainloader = DataLoader(dataset = DATA, batch_size= args.batch_size,
+                                 shuffle = True)
+    else:
+        trainloader = DataLoader(dataset = DATA, batch_size= args.batch_size,
+                                 shuffle = True, pin_memory=True, num_workers=2)
     N = len(trainloader.dataset)
-    
+
     model = VAE_3d().to(args.device)
-    
+
     optimizer = optim.SGD(model.parameters(), lr=args.lr)
-    
+
     for epoch in range(epochs):
         model.train()
         running_loss_elbo = 0.0
@@ -86,17 +90,17 @@ def main():
             elbo.backward()
             running_loss_elbo += elbo.item()
             optimizer.step()
-            
+
             running_loss_rec += rec_loss
             running_loss_kld += kld
-            
+
             del x, x_hat, mu, var, kld, rec_loss, elbo #In case you run out of memory
-    
+
         train_epoch_loss = running_loss_elbo/N
         train_loss_elbo.append(train_epoch_loss)
         train_loss_rec.append(running_loss_rec/N)
         train_loss_kld.append(running_loss_kld/N)
-        print(f"Epoch {epoch+1}/{epochs} - loss: {train_epoch_loss:.4f}")
+        #print(f"Epoch {epoch+1}/{epochs} - loss: {train_epoch_loss:.4f}")
         if epoch % args.save_step == 0:
             torch.save({'epoch': epoch,
                 'model_state_dict': model.state_dict(),
@@ -105,8 +109,8 @@ def main():
                 'rec_loss': train_loss_rec,
                 'KLD': train_loss_kld
                 }, args.save_model_path)
-    
-    
+
+
     torch.save({'epoch': epoch,
                 'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
@@ -114,11 +118,10 @@ def main():
                 'rec_loss': train_loss_rec,
                 'KLD': train_loss_kld
                 }, args.save_model_path)
-    
+
     return
 
 #%% Calling main
 
 if __name__ == '__main__':
     main()
-    
