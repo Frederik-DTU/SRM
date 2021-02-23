@@ -42,7 +42,7 @@ def parse_args():
     #Hyper-parameters
     parser.add_argument('--device', default='cpu', #'cuda:0'
                         type=str)
-    parser.add_argument('--epochs', default=10, #100000
+    parser.add_argument('--epochs', default=100, #100000
                         type=int)
     parser.add_argument('--batch_size', default=100,
                         type=int)
@@ -64,7 +64,7 @@ def main():
     epochs = args.epochs
 
     df = pd.read_csv(args.data_path, index_col=0)
-    DATA = torch.Tensor(df.values)
+    DATA = torch.Tensor(df.values).to(args.device) #DATA = torch.Tensor(df.values)
     DATA = torch.transpose(DATA, 0, 1)
 
     if args.device == 'cpu':
@@ -85,7 +85,7 @@ def main():
         running_loss_rec = 0.0
         running_loss_kld = 0.0
         for x in trainloader:
-            x = x.to(args.device)
+            #x = x.to(args.device) #If DATA is not saved to device
             _, x_hat, mu, var, kld, rec_loss, elbo = model(x)
             optimizer.zero_grad(set_to_none=True) #Based on performance tuning
             elbo.backward()
