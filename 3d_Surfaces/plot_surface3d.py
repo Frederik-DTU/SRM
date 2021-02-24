@@ -19,6 +19,7 @@ https://gist.github.com/sbarratt/37356c46ad1350d4c30aefbd488a4faa
 import torch
 import torch.optim as optim
 import pandas as pd
+import numpy as np
 
 #Own files
 from plot_dat import plot_3d_fun
@@ -28,16 +29,25 @@ from VAE_surface3d import VAE_3d
 
 def x3_R2(x1, x2):
     
-    return 0*x1
+    return x1, x2, 0*x1
 
 def x3_para(x1, x2):
     
-    return x1**2-x2**2
+    return x1, x2, x1**2-x2**2
+
+def x3_sphere(x1, x2):
+    
+    N = len(x1)
+    x3 = np.random.normal(0, 1, N)
+    
+    r = np.sqrt(x1**2+x2**2+x3**2)
+    
+    return x1/r, x2/r, x3/r
 
 #%% Plotting
 
 data_path = 'Data/para_data.csv' #'Data/surface_R2.csv'
-file_model_save = 'trained_models/para_3d_2000.pt' #'trained_models/surface_R2.pt'
+file_model_save = 'trained_models/para_3d_epoch_35000.pt' #'trained_models/surface_R2.pt'
 data_plot = plot_3d_fun(N_grid=100, fun = x3_para)
 device = 'cpu'
 lr = 0.0001

@@ -75,7 +75,7 @@ class plot_3d_fun(object):
         x2_grid = np.linspace(x2_grid[0], x2_grid[1], num = self.N_grid)
         
         X1, X2 = np.meshgrid(x1_grid, x2_grid)
-        X3 = self.fun(X1, X2)
+        X1, X2, X3 = self.fun(X1, X2)
         ax.plot_surface(
         X1, X2, X3,  rstride=1, cstride=1, color='c', alpha=0.2, linewidth=0)
         
@@ -107,7 +107,7 @@ class plot_3d_fun(object):
         x2_grid = np.linspace(x2_grid[0], x2_grid[1], num = self.N_grid)
         
         X1, X2 = np.meshgrid(x1_grid, x2_grid)
-        X3 = self.fun(X1, X2)
+        X1, X2, X3 = self.fun(X1, X2)
         ax.plot_surface(
         X1, X2, X3,  rstride=1, cstride=1, color='c', alpha=1.0, linewidth=0)
 
@@ -143,7 +143,7 @@ class plot_3d_fun(object):
         x2_grid = np.linspace(min(x2), max(x2), num = self.N_grid)
         
         X1, X2 = np.meshgrid(x1_grid, x2_grid)
-        X3 = self.fun(X1, X2)
+        X1, X2, X3 = self.fun(X1, X2)
         ax.plot_surface(
         X1, X2, X3,  rstride=1, cstride=1, color='c', alpha=0.2, linewidth=0)
 

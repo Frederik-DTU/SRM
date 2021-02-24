@@ -34,7 +34,7 @@ def parse_args():
     # File-paths
     parser.add_argument('--data_path', default='Data/para_data.csv', # 'Data/surface_R2.csv'
                         type=str)
-    parser.add_argument('--save_model_path', default='trained_models/para_3d', #'trained_models/surface_R2.pt'
+    parser.add_argument('--save_model_path', default='trained_models/para_3d', #'trained_models/surface_R2'
                         type=str)
     parser.add_argument('--save_step', default=100,
                         type=int)
@@ -48,6 +48,12 @@ def parse_args():
                         type=int)
     parser.add_argument('--lr', default=0.0001,
                         type=float)
+    
+    #Continue training or not
+    parser.add_argument('--con_training', default=False,
+                        type=bool)
+    parser.add_argument('--load_model_path', default='trained_models/para_3d_epoch_10.pt',
+                        type=str)
 
 
     args = parser.parse_args()
@@ -78,16 +84,31 @@ def main():
     model = VAE_3d().to(args.device)
 
     optimizer = optim.SGD(model.parameters(), lr=args.lr)
+    
+    if args.con_training:
+        checkpoint = torch.load(args.load_model_path, map_location=args.device)
+        model.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        last_epoch = checkpoint['epoch']
+        elbo = checkpoint['ELBO']
+        rec_loss = checkpoint['rec_loss']
+        kld_loss = checkpoint['KLD']
+        
+        train_loss_elbo.append(elbo)
+        train_loss_rec.append(rec_loss)
+        train_loss_kld.append(kld_loss)
+    else:
+        last_epoch = 0
 
     model.train()
-    for epoch in range(epochs):
+    for epoch in range(last_epoch, epochs):
         running_loss_elbo = 0.0
         running_loss_rec = 0.0
         running_loss_kld = 0.0
         for x in trainloader:
             x = x.to(args.device) #If DATA is not saved to device
             _, x_hat, mu, var, kld, rec_loss, elbo = model(x)
-            optimizer.zero_grad(set_to_none=True) #Based on performance tuning
+            optimizer.zero_grad() #optimizer.zero_grad(set_to_none=True) #Based on performance tuning
             elbo.backward()
             optimizer.step()
 
@@ -101,7 +122,7 @@ def main():
         train_loss_elbo.append(train_epoch_loss)
         train_loss_rec.append(running_loss_rec/N)
         train_loss_kld.append(running_loss_kld/N)
-        #print(f"Epoch {epoch+1}/{epochs} - loss: {train_epoch_loss:.4f}")
+        print(f"Epoch {epoch+1}/{epochs} - loss: {train_epoch_loss:.4f}")
 
 
         if (epoch+1) % args.save_step == 0:

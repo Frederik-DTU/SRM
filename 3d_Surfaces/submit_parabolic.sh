@@ -17,12 +17,12 @@ module swap cuda/8.0
 module swap cudnn/v7.0-prod-cuda8
 
 python3 train_surface3d.py \
-    --data_path Data/para_data.csv \
-    --save_model_path trained_models/para_3d \
+    --data_path Data/parabolic.csv \
+    --save_model_path trained_models/parabolic \
     --save_step 5000 \
     --device cuda \
     --epochs 100000 \
     --batch_size 100 \
     --lr 0.0001 \
-    --con_training True \
-    --load_model_path trained_models/para_3d_epoch_50000.pt
+    --con_training False \
+    --load_model_path trained_models/parabolic_epoch_10.pt

@@ -23,7 +23,7 @@ def x2_fun(N, mu = 0, std = 1):
     
 def x3_fun(x1, x2):
     
-    return x1**2-x2**2
+    return x1, x2, x1**2-x2**2
 
 class sim_3d_fun(object):
     def __init__(self,
@@ -45,7 +45,7 @@ class sim_3d_fun(object):
         x1 = self.x1_fun(self.N_sim)
         x2 = self.x2_fun(self.N_sim)
         
-        x3 = self.x3_fun(x1, x2)
+        x1, x2, x3 = self.x3_fun(x1, x2)
         
         df = np.vstack((x1, x2, x3))
         
