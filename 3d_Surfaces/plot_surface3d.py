@@ -47,7 +47,7 @@ def x3_sphere(x1, x2):
 #%% Plotting
 
 data_path = 'Data/para_data.csv' #'Data/surface_R2.csv'
-file_model_save = 'trained_models/para_3d_epoch_35000.pt' #'trained_models/surface_R2.pt'
+file_model_save = 'trained_models/para_3d_epoch_50000.pt' #'trained_models/surface_R2.pt'
 data_plot = plot_3d_fun(N_grid=100, fun = x3_para)
 device = 'cpu'
 lr = 0.0001
