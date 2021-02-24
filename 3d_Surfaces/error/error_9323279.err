@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "train_surface3d.py", line 132, in <module>
+    main()
+  File "train_surface3d.py", line 89, in main
+    _, x_hat, mu, var, kld, rec_loss, elbo = model(x)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/torch/nn/modules/module.py", line 727, in _call_impl
+    result = self.forward(*input, **kwargs)
+  File "/zhome/77/8/118225/Desktop/SRM/Github/SRM/3d_Surfaces/VAE_surface3d.py", line 150, in forward
+    kld = self.kl_divergence(z, mu, std)
+  File "/zhome/77/8/118225/Desktop/SRM/Github/SRM/3d_Surfaces/VAE_surface3d.py", line 130, in kl_divergence
+    log_pz = p.log_prob(z)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/torch/distributions/normal.py", line 76, in log_prob
+    return -((value - self.loc) ** 2) / (2 * var) - log_scale - math.log(math.sqrt(2 * math.pi))
+KeyboardInterrupt
