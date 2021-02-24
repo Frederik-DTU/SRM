@@ -48,7 +48,7 @@ def parse_args():
                         type=int)
     parser.add_argument('--lr', default=0.0001,
                         type=float)
-    
+
     #Continue training or not
     parser.add_argument('--con_training', default=False,
                         type=bool)
@@ -70,7 +70,7 @@ def main():
     epochs = args.epochs
 
     df = pd.read_csv(args.data_path, index_col=0)
-    DATA = torch.Tensor(df.values) #DATA = torch.Tensor(df.values).to(args.device)
+    DATA = torch.Tensor(df.values).to(args.device) #DATA = torch.Tensor(df.values)
     DATA = torch.transpose(DATA, 0, 1)
 
     if args.device == 'cpu':
@@ -78,13 +78,13 @@ def main():
                                  shuffle = True, pin_memory=True, num_workers = 0)
     else:
         trainloader = DataLoader(dataset = DATA, batch_size= args.batch_size,
-                                 shuffle = True, pin_memory=True, num_workers=2)
+                                 shuffle = True)
     N = len(trainloader.dataset)
 
     model = VAE_3d().to(args.device)
 
     optimizer = optim.SGD(model.parameters(), lr=args.lr)
-    
+
     if args.con_training:
         checkpoint = torch.load(args.load_model_path, map_location=args.device)
         model.load_state_dict(checkpoint['model_state_dict'])
@@ -93,7 +93,7 @@ def main():
         elbo = checkpoint['ELBO']
         rec_loss = checkpoint['rec_loss']
         kld_loss = checkpoint['KLD']
-        
+
         train_loss_elbo.append(elbo)
         train_loss_rec.append(rec_loss)
         train_loss_kld.append(kld_loss)
@@ -106,7 +106,7 @@ def main():
         running_loss_rec = 0.0
         running_loss_kld = 0.0
         for x in trainloader:
-            x = x.to(args.device) #If DATA is not saved to device
+            #x = x.to(args.device) #If DATA is not saved to device
             _, x_hat, mu, var, kld, rec_loss, elbo = model(x)
             optimizer.zero_grad() #optimizer.zero_grad(set_to_none=True) #Based on performance tuning
             elbo.backward()
@@ -122,7 +122,7 @@ def main():
         train_loss_elbo.append(train_epoch_loss)
         train_loss_rec.append(running_loss_rec/N)
         train_loss_kld.append(running_loss_kld/N)
-        print(f"Epoch {epoch+1}/{epochs} - loss: {train_epoch_loss:.4f}")
+        #print(f"Epoch {epoch+1}/{epochs} - loss: {train_epoch_loss:.4f}")
 
 
         if (epoch+1) % args.save_step == 0:

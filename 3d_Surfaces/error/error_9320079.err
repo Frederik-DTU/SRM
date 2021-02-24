@@ -1,1 +1,0 @@
-/zhome/77/8/118225/.lsbatch/1614044390.9320079.shell: line 27: 17522 Killed                  python3 train_surface3d.py --data_path Data/para_data.csv --save_model_path trained_models/para_3d.pt --save_step 1000 --device cuda:0 --epochs 100000 --batch_size 100 --lr 0.0001
