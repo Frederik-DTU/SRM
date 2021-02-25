@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "train_surface3d.py", line 153, in <module>
+    main()
+  File "train_surface3d.py", line 110, in main
+    _, x_hat, mu, var, kld, rec_loss, elbo = model(x)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/torch/nn/modules/module.py", line 727, in _call_impl
+    result = self.forward(*input, **kwargs)
+  File "/zhome/77/8/118225/Desktop/SRM/Github/SRM/3d_Surfaces/VAE_surface3d.py", line 140, in forward
+    x_encoded = self.encoder(x)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/torch/nn/modules/module.py", line 727, in _call_impl
+    result = self.forward(*input, **kwargs)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/torch/nn/modules/container.py", line 117, in forward
+    input = module(input)
+KeyboardInterrupt

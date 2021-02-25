@@ -50,8 +50,8 @@ def parse_args():
                         type=float)
 
     #Continue training or not
-    parser.add_argument('--con_training', default=False,
-                        type=bool)
+    parser.add_argument('--con_training', default=0,
+                        type=int)
     parser.add_argument('--load_model_path', default='trained_models/para_3d_epoch_10.pt',
                         type=str)
 
