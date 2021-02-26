@@ -23,7 +23,7 @@ import numpy as np
 
 #Own files
 from plot_dat import plot_3d_fun
-from VAE_surface3d import VAE_3d_prob_var
+from VAE_surface3d import VAE_3d_prob_var, VAE_3d_prob_logvar, VAE_3d_nprob_var, VAE_3d_nprob_logvar
 
 #%% Function for plotting
 

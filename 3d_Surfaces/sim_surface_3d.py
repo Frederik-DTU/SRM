@@ -22,7 +22,7 @@ from sim_dat import sim_3d_fun
 #%% Function for simulating hyper-parabolic
 
 N_sim = 50000 #Number of simulated points
-name_path = 'Data/para_data.csv' #Path/file_name
+name_path = 'Data/hyper_para.csv' #Path/file_name
 
 def x1_fun(N, mu = 0, std = 1):
     

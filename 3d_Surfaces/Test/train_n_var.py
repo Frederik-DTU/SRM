@@ -25,7 +25,7 @@ import argparse
 import pandas as pd
 
 #Own files
-from VAE_surface3d import VAE_3d_prob_var
+from VAE_surface3d import VAE_3d_nprob_var
 
 #%% Parser for command line arguments
 
@@ -52,7 +52,7 @@ def parse_args():
     #Continue training or not
     parser.add_argument('--con_training', default=0,
                         type=int)
-    parser.add_argument('--load_model_path', default='trained_models/hyper_para_epoch_5000.pt',
+    parser.add_argument('--load_model_path', default='trained_models_n_var/hyper_para_epoch_5000.pt',
                         type=str)
 
 
@@ -81,7 +81,7 @@ def main():
                                  shuffle = True)
     N = len(trainloader.dataset)
 
-    model = VAE_3d_prob_var().to(args.device) #Model used
+    model = VAE_3d_nprob_var().to(args.device) #Model used
 
     optimizer = optim.SGD(model.parameters(), lr=args.lr)
 

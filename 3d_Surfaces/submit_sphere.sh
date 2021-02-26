@@ -25,4 +25,4 @@ python3 train_surface3d.py \
     --batch_size 100 \
     --lr 0.0001 \
     --con_training 0 \
-    --load_model_path trained_models/sphere_epoch_10.pt
+    --load_model_path trained_models/sphere/sphere_epoch_5000.pt
