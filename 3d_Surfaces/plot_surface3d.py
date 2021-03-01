@@ -51,7 +51,7 @@ def x3_sphere(x1, x2):
 #%% Plotting
 
 data_path = 'Data/parabolic.csv' #'Data/hyper_para.csv'
-file_model_save = 'trained_models/parabolic/parabolic_epoch_15000.pt' #'trained_models/hyper_para/para_3d_epoch_100000.pt'
+file_model_save = 'trained_models/parabolic/parabolic_epoch_55000.pt' #'trained_models/hyper_para/para_3d_epoch_100000.pt'
 data_plot = plot_3d_fun(N_grid=100, fun = x3_parabolic) #x3_hyper_para
 device = 'cpu'
 lr = 0.0001
