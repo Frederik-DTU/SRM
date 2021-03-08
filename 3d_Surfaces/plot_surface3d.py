@@ -23,7 +23,7 @@ import numpy as np
 
 #Own files
 from plot_dat import plot_3d_fun
-from VAE_surface3d import VAE_3d_prob_var
+from VAE_surface3d import VAE_3d
 
 #%% Function for plotting
 
@@ -51,7 +51,7 @@ def x3_sphere(x1, x2):
 #%% Plotting
 
 data_path = 'Data/parabolic.csv' #'Data/hyper_para.csv'
-file_model_save = 'trained_models/parabolic/parabolic_epoch_55000.pt' #'trained_models/hyper_para/para_3d_epoch_100000.pt'
+file_model_save = 'trained_models/parabolic/parabolic_epoch_1000.pt' #'trained_models/hyper_para/para_3d_epoch_100000.pt'
 data_plot = plot_3d_fun(N_grid=100, fun = x3_parabolic) #x3_hyper_para
 device = 'cpu'
 lr = 0.0001
@@ -69,7 +69,7 @@ data_plot.plot_data_scatter_3d(x1, x2, x3) #Plotting the true surface with the s
 data_plot.plot_data_surface_3d(x1, x2, x3) #Surface plot of the data
 
 #Plotting the trained model
-model = VAE_3d_prob_var().to(device)
+model = VAE_3d().to(device)
 optimizer = optim.SGD(model.parameters(), lr=lr)
 
 checkpoint = torch.load(file_model_save, map_location=device)

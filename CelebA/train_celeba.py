@@ -30,7 +30,7 @@ from VAE_celeba import VAE_CELEBA
 def parse_args():
     parser = argparse.ArgumentParser()
     # File-paths
-    parser.add_argument('--celeba_path', default="data/celeba",
+    parser.add_argument('--celeba_path', default="../../Data/CelebA/Data/celeba",
                         type=str)
     parser.add_argument('--save_model_path', default='trained_models/celeba', #'trained_models/surface_R2'
                         type=str)
@@ -117,7 +117,7 @@ def main():
             #x = x.to(args.device) #If DATA is not saved to device
             dat = x[0].to(args.device)
             _, x_hat, mu, var, kld, rec_loss, elbo = model(dat)
-            optimizer.zero_grad() #optimizer.zero_grad(set_to_none=True) #Based on performance tuning
+            optimizer.zero_grad(set_to_none=True) #Based on performance tuning
             elbo.backward()
             optimizer.step()
 
@@ -131,7 +131,7 @@ def main():
         train_loss_elbo.append(train_epoch_loss)
         train_loss_rec.append(running_loss_rec/N)
         train_loss_kld.append(running_loss_kld/N)
-        print(f"Epoch {epoch+1}/{epochs} - loss: {train_epoch_loss:.4f}")
+        #print(f"Epoch {epoch+1}/{epochs} - loss: {train_epoch_loss:.4f}")
 
 
         if (epoch+1) % args.save_step == 0:

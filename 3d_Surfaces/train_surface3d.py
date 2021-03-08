@@ -25,16 +25,16 @@ import argparse
 import pandas as pd
 
 #Own files
-from VAE_surface3d import VAE_3d_prob_var
+from VAE_surface3d import VAE_3d
 
 #%% Parser for command line arguments
 
 def parse_args():
     parser = argparse.ArgumentParser()
     # File-paths
-    parser.add_argument('--data_path', default='Data/hyper_para.csv', # 'Data/surface_R2.csv'
+    parser.add_argument('--data_path', default='Data/parabolic.csv', # 'Data/surface_R2.csv'
                         type=str)
-    parser.add_argument('--save_model_path', default='trained_models/hyper_para/hyper_para', #'trained_models/surface_R2'
+    parser.add_argument('--save_model_path', default='trained_models/parabolic/parabolic', #'trained_models/surface_R2'
                         type=str)
     parser.add_argument('--save_step', default=100,
                         type=int)
@@ -52,7 +52,7 @@ def parse_args():
     #Continue training or not
     parser.add_argument('--con_training', default=0,
                         type=int)
-    parser.add_argument('--load_model_path', default='trained_models/hyper_para_epoch_5000.pt',
+    parser.add_argument('--load_model_path', default='trained_models/parabolic_epoch_5000.pt',
                         type=str)
 
 
@@ -81,7 +81,7 @@ def main():
                                  shuffle = True)
     N = len(trainloader.dataset)
 
-    model = VAE_3d_prob_var().to(args.device) #Model used
+    model = VAE_3d().to(args.device) #Model used
 
     optimizer = optim.SGD(model.parameters(), lr=args.lr)
 

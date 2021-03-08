@@ -29,7 +29,7 @@ from VAE_celeba import VAE_CELEBA
 
 #%% Plotting
 
-dataroot = "data/celeba" #Directory for dataset
+dataroot = "../../Data/CelebA/Data/celeba" #Directory for dataset
 file_model_save = 'trained_models/celeba_epoch_10.pt' #'trained_models/hyper_para/para_3d_epoch_100000.pt'
 device = 'cpu'
 lr = 0.0002

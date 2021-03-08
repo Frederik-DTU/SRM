@@ -29,7 +29,7 @@ from VAE_svhn import VAE_SVHN
 def parse_args():
     parser = argparse.ArgumentParser()
     # File-paths
-    parser.add_argument('--svhn_path', default="Data/SVHN",
+    parser.add_argument('--svhn_path', default="../../Data/SVHN",
                         type=str)
     parser.add_argument('--save_model_path', default='trained_models/svhn', #'trained_models/surface_R2'
                         type=str)
@@ -120,7 +120,7 @@ def main():
         train_loss_elbo.append(train_epoch_loss)
         train_loss_rec.append(running_loss_rec/N)
         train_loss_kld.append(running_loss_kld/N)
-        print(f"Epoch {epoch+1}/{epochs} - loss: {train_epoch_loss:.4f}")
+        #print(f"Epoch {epoch+1}/{epochs} - loss: {train_epoch_loss:.4f}")
 
 
         if (epoch+1) % args.save_step == 0:

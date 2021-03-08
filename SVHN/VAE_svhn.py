@@ -106,22 +106,54 @@ class VAE_SVHN(nn.Module):
         x_hat = self.g_tcon5(x5)
                 
         return x_hat
+    
+    def gaussian_likelihood(self, x_hat, logscale, x):
+        scale = torch.exp(logscale)
+        mean = x_hat
+        dist = torch.distributions.Normal(mean, scale)
+
+        # measure prob of seeing image under p(x|z)
+        log_pxz = dist.log_prob(x)
+        
+        return log_pxz.sum(dim=(1,2,3))
+
+    def kl_divergence(self, z, mu, std):
+        # --------------------------
+        # Monte carlo KL divergence
+        # --------------------------
+        # 1. define the first two probabilities (in this case Normal for both)
+        p = torch.distributions.Normal(torch.zeros_like(mu), torch.ones_like(std))
+        q = torch.distributions.Normal(mu, std)
+
+        # 2. get the probabilities from the equation
+        log_qzx = q.log_prob(z)
+        log_pz = p.log_prob(z)
+
+        # kl
+        kl = (log_qzx - log_pz)
+        kl = kl.sum(-1)
+        
+        return kl
         
     def forward(self, x):
         
         mu, std = self.encoder(x)
-        var = std**2
         
         z = self.rep_par(mu, std)
         
         x_hat = self.decoder(z)
                 
-        rec_loss = self.rec_loss(x_hat, x)
-        kld = -0.5 * torch.sum(torch.sum(1 + var.log() - mu.pow(2) - var, dim = 1), dim = 0)
+        # compute the ELBO with and without the beta parameter: 
+        # `L^\beta = E_q [ log p(x|z) - \beta * D_KL(q(z|x) | p(z))`
+        # where `D_KL(q(z|x) | p(z)) = log q(z|x) - log p(z)`
+        kld = self.kl_divergence(z, mu, std)
+        rec_loss = self.gaussian_likelihood(x_hat, self.log_scale, x)
         
-        loss = kld+rec_loss
+        # elbo
+        elbo = (kld - rec_loss)
+        elbo = elbo.mean()
         
-        return z, x_hat, mu, std, kld, rec_loss, loss
+        return z, x_hat, mu, std, kld.mean(), -rec_loss.mean(), elbo
     
     def get_encoded(self, x):
         

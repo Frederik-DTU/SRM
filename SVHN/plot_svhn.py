@@ -28,7 +28,7 @@ from VAE_svhn import VAE_SVHN
 
 #%% Plotting
 
-dataroot = "data/svhn" #Directory for dataset
+dataroot = "../../Data/SVHN" #Directory for dataset
 file_model_save = 'trained_models/svhn_epoch_10.pt' #'trained_models/hyper_para/para_3d_epoch_100000.pt'
 device = 'cpu'
 lr = 0.0002

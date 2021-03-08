@@ -17,7 +17,7 @@ module swap cuda/8.0
 module swap cudnn/v7.0-prod-cuda8
 
 python3 train_celeba.py \
-    --data_path Data/SVHN \
+    --data_path ../../Data/SVHN \
     --save_model_path trained_models/svhn \
     --save_step 5000 \
     --device cuda \
