@@ -71,6 +71,9 @@ class VAE_SVHN(nn.Module):
         self.ELU = nn.ELU()
         self.Sigmoid = nn.Sigmoid()
         self.rec_loss = rec_loss
+        
+        # for the gaussian likelihood
+        self.log_scale = nn.Parameter(torch.Tensor([0.0]))
                 
     def encoder(self, x):
                 
