@@ -174,7 +174,7 @@ import torchvision.datasets as dset
 import torchvision.transforms as transforms
 
 
-dataroot = "Data/SVHN" #Directory for dataset
+dataroot = "../../Data/svhn" #Directory for dataset
 batch_size = 2 #Batch size duiring training
 image_size = 64 #Image size
 nc = 3 #Channels
