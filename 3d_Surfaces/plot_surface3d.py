@@ -48,17 +48,54 @@ def x3_sphere(x1, x2):
     
     return x1/r, x2/r, x3/r
 
-#%% Plotting
+#%% Loading data and model
 
-data_path = 'Data/parabolic.csv' #'Data/hyper_para.csv'
-file_model_save = 'trained_models/parabolic/parabolic_epoch_1000.pt' #'trained_models/hyper_para/para_3d_epoch_100000.pt'
-data_plot = plot_3d_fun(N_grid=100, fun = x3_parabolic) #x3_hyper_para
-device = 'cpu'
+#Hyper-parameters
+epoch_load = '60000'
 lr = 0.0001
+device = 'cpu'
 
+#Parabolic data
+data_name = 'parabolic'
+fun = x3_parabolic
+
+#Hyper parabolic data
+#data_name = 'hyper_para'
+#fun = x3_hyper_para
+
+#Surface in R3 (R2) data
+#data_name = 'surface_R2'
+#fun = x3_R2
+
+#Sphere data
+#data_name = 'sphere'
+#fun = x3_sphere
+
+#Loading files
+data_path = 'Data/'+data_name+'.csv'
+file_model_save = 'trained_models/'+data_name+'/'+data_name+'_epoch_'+epoch_load+'.pt'
+data_plot = plot_3d_fun(N_grid=100, fun = fun)
+
+#Loading data
 df = pd.read_csv(data_path, index_col=0)
 DATA = torch.Tensor(df.values)
 DATA = torch.transpose(DATA, 0, 1)
+
+#Loading model
+model = VAE_3d().to(device)
+optimizer = optim.SGD(model.parameters(), lr=lr)
+
+checkpoint = torch.load(file_model_save, map_location=device)
+model.load_state_dict(checkpoint['model_state_dict'])
+optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+epoch = checkpoint['epoch']
+elbo = checkpoint['ELBO']
+rec_loss = checkpoint['rec_loss']
+kld_loss = checkpoint['KLD']
+
+model.eval()
+
+#%% Plotting true data
 
 #Plotting the raw data
 x1 = DATA[:,0].detach().numpy()
@@ -81,6 +118,8 @@ rec_loss = checkpoint['rec_loss']
 kld_loss = checkpoint['KLD']
 
 model.eval()
+
+#%% Plotting learned data
 
 X = model(DATA) #x=z, x_hat, mu, var, kld.mean(), rec_loss.mean(), elbo
 z = X[0]

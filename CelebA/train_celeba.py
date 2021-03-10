@@ -30,7 +30,7 @@ from VAE_celeba import VAE_CELEBA
 def parse_args():
     parser = argparse.ArgumentParser()
     # File-paths
-    parser.add_argument('--celeba_path', default="../../Data/CelebA/Data/celeba",
+    parser.add_argument('--celeba_path', default="../../Data/CelebA/celeba",
                         type=str)
     parser.add_argument('--save_model_path', default='trained_models/celeba', #'trained_models/surface_R2'
                         type=str)
