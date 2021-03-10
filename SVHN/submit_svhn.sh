@@ -17,7 +17,7 @@ module swap cuda/8.0
 module swap cudnn/v7.0-prod-cuda8
 
 python3 train_svhn.py \
-    --data_path ../../Data/SVHN \
+    --svhn_path ../../Data/svhn \
     --save_model_path trained_models/svhn \
     --save_step 1000 \
     --device cuda \
