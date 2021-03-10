@@ -51,7 +51,7 @@ def x3_sphere(x1, x2):
 #%% Loading data and model
 
 #Hyper-parameters
-epoch_load = '60000'
+epoch_load = '80000'
 lr = 0.0001
 device = 'cpu'
 
