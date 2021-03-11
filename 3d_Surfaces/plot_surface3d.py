@@ -51,13 +51,13 @@ def x3_sphere(x1, x2):
 #%% Loading data and model
 
 #Hyper-parameters
-epoch_load = '80000'
+epoch_load = '100000'
 lr = 0.0001
 device = 'cpu'
 
 #Parabolic data
-data_name = 'parabolic'
-fun = x3_parabolic
+data_name = 'sphere'
+fun = x3_R2
 
 #Hyper parabolic data
 #data_name = 'hyper_para'
