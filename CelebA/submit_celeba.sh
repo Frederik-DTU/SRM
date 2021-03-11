@@ -23,7 +23,7 @@ python3 train_celeba.py \
     --img_size 64 \
     --num_img 0.8 \
     --device cuda \
-    --workers 2 \
+    --workers 4 \
     --epochs 50000 \
     --batch_size 100 \
     --lr 0.0002 \

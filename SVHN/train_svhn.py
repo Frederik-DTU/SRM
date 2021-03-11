@@ -20,6 +20,7 @@ from torch.utils.data import DataLoader
 import torchvision.datasets as dset
 import torchvision.transforms as transforms
 import argparse
+import numpy as np
 
 #Own files
 from VAE_svhn import VAE_SVHN
@@ -35,6 +36,12 @@ def parse_args():
                         type=str)
     parser.add_argument('--save_step', default=100,
                         type=int)
+    
+    #Training-size
+    parser.add_argument('--num_img', default=0.001, #0.8
+                        type=float)
+    parser.add_argument('--train_type', default="train", #0.8
+                        type=str)
 
     #Hyper-parameters
     parser.add_argument('--device', default='cpu', #'cuda:0'
@@ -68,13 +75,15 @@ def main():
     train_loss_kld = [] #KLD loss
     epochs = args.epochs
     
-    dataset = dset.SVHN(root=args.svhn_path, split = 'extra',
+    dataset = dset.SVHN(root=args.svhn_path, split = args.train_type,
                            transform=transforms.Compose([
                                transforms.ToTensor(),
                            ]))
+    
+    dataset_subset = torch.utils.data.Subset(dataset, np.random.choice(len(dataset), int(args.num_img*len(dataset)), replace=False))
 
-    trainloader = DataLoader(dataset, batch_size=args.batch_size,
-                             shuffle=True, num_workers=args.workers)
+    trainloader = DataLoader(dataset = dataset_subset, batch_size= args.batch_size,
+                                 shuffle = True, pin_memory = True, num_workers = args.workers)
 
     N = len(trainloader.dataset)
 

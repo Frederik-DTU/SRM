@@ -20,6 +20,8 @@ python3 train_svhn.py \
     --svhn_path ../../Data/svhn \
     --save_model_path trained_models/svhn \
     --save_step 1000 \
+    --num_img 1 \
+    --train_type train \
     --device cuda \
     --workers 2 \
     --epochs 50000 \

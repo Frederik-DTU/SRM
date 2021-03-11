@@ -84,8 +84,8 @@ def main():
                            ]))
     dataset_subset = torch.utils.data.Subset(dataset, np.random.choice(len(dataset), int(args.num_img*len(dataset)), replace=False))
 
-    trainloader = DataLoader(dataset_subset, batch_size=args.batch_size,
-                             shuffle=True, num_workers=args.workers)
+    trainloader = DataLoader(dataset = dataset_subset, batch_size= args.batch_size,
+                                 shuffle = True, pin_memory = True, num_workers = args.workers)
 
     N = len(trainloader.dataset)
 

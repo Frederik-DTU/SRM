@@ -24,5 +24,6 @@ python3 train_surface3d.py \
     --epochs 100000 \
     --batch_size 100 \
     --lr 0.0001 \
+    --workers 4 \
     --con_training 1 \
     --load_model_path trained_models/surface_R2/surface_R2_epoch_65000.pt

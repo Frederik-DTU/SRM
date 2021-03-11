@@ -48,6 +48,8 @@ def parse_args():
                         type=int)
     parser.add_argument('--lr', default=0.0001,
                         type=float)
+    parser.add_argument('--workers', default=0,
+                        type=int)
 
     #Continue training or not
     parser.add_argument('--con_training', default=0,
@@ -75,10 +77,10 @@ def main():
 
     if args.device == 'cpu':
         trainloader = DataLoader(dataset = DATA, batch_size= args.batch_size,
-                                 shuffle = True, pin_memory=True, num_workers = 0)
+                                 shuffle = True, pin_memory=True, num_workers = args.workers)
     else:
         trainloader = DataLoader(dataset = DATA, batch_size= args.batch_size,
-                                 shuffle = True)
+                                 shuffle = True, num_workers = args.workers)
     N = len(trainloader.dataset)
 
     model = VAE_3d().to(args.device) #Model used

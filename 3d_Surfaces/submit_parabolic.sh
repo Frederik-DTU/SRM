@@ -24,5 +24,6 @@ python3 train_surface3d.py \
     --epochs 100000 \
     --batch_size 100 \
     --lr 0.0001 \
+    --workers 4 \
     --con_training 1 \
     --load_model_path trained_models/parabolic/parabolic_epoch_80000.pt

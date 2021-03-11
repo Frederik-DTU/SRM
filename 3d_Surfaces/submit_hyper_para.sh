@@ -23,6 +23,7 @@ python3 train_surface3d.py \
     --device cuda \
     --epochs 100000 \
     --batch_size 100 \
+    --workers 4 \
     --lr 0.0001 \
     --con_training 1 \
     --load_model_path trained_models/hyper_para/hyper_para_epoch_60000.pt
