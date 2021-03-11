@@ -1,0 +1,9 @@
+usage: train_celeba.py [-h] [--celeba_path CELEBA_PATH]
+                       [--save_model_path SAVE_MODEL_PATH]
+                       [--save_step SAVE_STEP] [--img_size IMG_SIZE]
+                       [--num_img NUM_IMG] [--device DEVICE]
+                       [--workers WORKERS] [--epochs EPOCHS]
+                       [--batch_size BATCH_SIZE] [--lr LR]
+                       [--con_training CON_TRAINING]
+                       [--load_model_path LOAD_MODEL_PATH]
+train_celeba.py: error: unrecognized arguments: ../../Data/CelebA/celeba

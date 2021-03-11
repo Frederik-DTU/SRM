@@ -17,7 +17,7 @@ module swap cuda/8.0
 module swap cudnn/v7.0-prod-cuda8
 
 python3 train_celeba.py \
-    --data_path dataroot = ../../Data/CelebA/celeba \
+    --celeba_path = ../../Data/CelebA/celeba \
     --save_model_path trained_models/celeba \
     --save_step 1000 \
     --img_size 64 \
