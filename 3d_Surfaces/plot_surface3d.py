@@ -105,20 +105,6 @@ data_plot.true_plot_3d([min(x1), max(x1)], [min(x2), max(x2)]) #Plotting the tru
 data_plot.plot_data_scatter_3d(x1, x2, x3) #Plotting the true surface with the simulated data
 data_plot.plot_data_surface_3d(x1, x2, x3) #Surface plot of the data
 
-#Plotting the trained model
-model = VAE_3d().to(device)
-optimizer = optim.SGD(model.parameters(), lr=lr)
-
-checkpoint = torch.load(file_model_save, map_location=device)
-model.load_state_dict(checkpoint['model_state_dict'])
-optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-epoch = checkpoint['epoch']
-elbo = checkpoint['ELBO']
-rec_loss = checkpoint['rec_loss']
-kld_loss = checkpoint['KLD']
-
-model.eval()
-
 #%% Plotting learned data
 
 X = model(DATA) #x=z, x_hat, mu, var, kld.mean(), rec_loss.mean(), elbo

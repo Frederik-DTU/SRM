@@ -25,14 +25,16 @@ import numpy as np
 
 #Own files
 from VAE_svhn import VAE_SVHN
+from plot_dat import plot_3d_fun
 
-#%% Plotting
+#%% Loading data and model
 
-dataroot = "../../Data/SVHN" #Directory for dataset
-file_model_save = 'trained_models/svhn_epoch_1000.pt' #'trained_models/hyper_para/para_3d_epoch_100000.pt'
+dataroot = "../../Data/SVHN"
+file_model_save = 'trained_models/svhn_epoch_4000.pt'
 device = 'cpu'
 lr = 0.0002
 
+data_plot = plot_3d_fun(N_grid=100)
 dataset = dset.SVHN(root=dataroot, split = 'train',
                            transform=transforms.Compose([
                                transforms.ToTensor(),
@@ -55,6 +57,8 @@ kld_loss = checkpoint['KLD']
 
 model.eval()
 
+#%% Plotting
+
 # Plot some training images
 real_batch = next(iter(trainloader))
 recon_batch = model(real_batch[0]) #x=z, x_hat, mu, var, kld.mean(), rec_loss.mean(), elbo
@@ -72,3 +76,8 @@ plt.axis("off")
 plt.title("Reconstruction Images")
 plt.imshow(np.transpose(vutils.make_grid(x_hat.to(device), padding=2, normalize=True).cpu(),(1,2,0)))
 plt.show()
+
+#Plotting loss function
+data_plot.plot_loss(elbo, title='Loss function')
+data_plot.plot_loss(rec_loss, title='Reconstruction Loss')
+data_plot.plot_loss(kld_loss, title='KLD')
