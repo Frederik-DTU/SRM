@@ -81,7 +81,7 @@ plt.imshow(np.transpose(vutils.make_grid(real_batch[0].to(device), padding=2, no
 plt.subplot(1,2,2)
 plt.axis("off")
 plt.title("Reconstruction Images")
-plt.imshow(np.transpose(vutils.make_grid(x_hat[1].to(device), padding=2, normalize=True).cpu(),(1,2,0)))
+plt.imshow(np.transpose(vutils.make_grid(x_hat.to(device), padding=2, normalize=True).cpu(),(1,2,0)))
 
 plt.tight_layout()
 plt.show()
