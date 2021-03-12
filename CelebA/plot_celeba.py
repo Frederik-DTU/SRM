@@ -24,15 +24,16 @@ import torchvision.utils as vutils
 import numpy as np
 
 #Own files
-from plot_dat import plot_3d_fun
 from VAE_celeba import VAE_CELEBA
+from plot_dat import plot_3d_fun
 
-#%% Plotting
+#%% Loading data and model
 
 dataroot = "../../Data/CelebA/celeba" #Directory for dataset
-file_model_save = 'trained_models/celeba_epoch_10.pt' #'trained_models/hyper_para/para_3d_epoch_100000.pt'
+file_model_save = 'trained_models/celeba_epoch_100.pt' #'trained_models/hyper_para/para_3d_epoch_100000.pt'
 device = 'cpu'
 lr = 0.0002
+
 img_size = 64
 data_plot = plot_3d_fun(N_grid=100) #x3_hyper_para
 
@@ -61,10 +62,7 @@ kld_loss = checkpoint['KLD']
 
 model.eval()
 
-#Plotting loss function
-data_plot.plot_loss(elbo, title='Loss function')
-data_plot.plot_loss(rec_loss, title='Reconstruction Loss')
-data_plot.plot_loss(kld_loss, title='KLD')
+#%% Plotting
 
 # Plot some training images
 real_batch = next(iter(trainloader))
@@ -82,6 +80,9 @@ plt.subplot(1,2,2)
 plt.axis("off")
 plt.title("Reconstruction Images")
 plt.imshow(np.transpose(vutils.make_grid(x_hat.to(device), padding=2, normalize=True).cpu(),(1,2,0)))
-
-plt.tight_layout()
 plt.show()
+
+#Plotting loss function
+data_plot.plot_loss(elbo, title='Loss function')
+data_plot.plot_loss(rec_loss, title='Reconstruction Loss')
+data_plot.plot_loss(kld_loss, title='KLD')
