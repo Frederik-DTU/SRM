@@ -21,7 +21,7 @@ python3 train_celeba.py \
     --save_model_path trained_models/celeba \
     --save_step 1000 \
     --img_size 64 \
-    --num_img 0.8 \
+    --num_img 0.3 \
     --device cuda \
     --workers 4 \
     --epochs 50000 \
