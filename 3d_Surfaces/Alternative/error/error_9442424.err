@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "train_surface3d.py", line 155, in <module>
+    main()
+  File "train_surface3d.py", line 74, in main
+    df = pd.read_csv(args.data_path, index_col=0)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/pandas/io/parsers.py", line 610, in read_csv
+    return _read(filepath_or_buffer, kwds)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/pandas/io/parsers.py", line 462, in _read
+    parser = TextFileReader(filepath_or_buffer, **kwds)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/pandas/io/parsers.py", line 819, in __init__
+    self._engine = self._make_engine(self.engine)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/pandas/io/parsers.py", line 1050, in _make_engine
+    return mapping[engine](self.f, **self.options)  # type: ignore[call-arg]
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/pandas/io/parsers.py", line 1867, in __init__
+    self._open_handles(src, kwds)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/pandas/io/parsers.py", line 1362, in _open_handles
+    self.handles = get_handle(
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/pandas/io/common.py", line 642, in get_handle
+    handle = open(
+FileNotFoundError: [Errno 2] No such file or directory: 'Data/surface_R2.csv'
