@@ -17,7 +17,7 @@ module swap cuda/8.0
 module swap cudnn/v7.0-prod-cuda8
 
 python3 train_surface3d.py \
-    --data_path Data/sphere.csv \
+    --data_path ../Data/sphere.csv \
     --save_model_path trained_models/sphere/sphere \
     --save_step 5000 \
     --device cuda \
