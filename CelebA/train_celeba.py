@@ -40,7 +40,7 @@ def parse_args():
     #Cropping image
     parser.add_argument('--img_size', default=64,
                         type=int)
-    parser.add_argument('--num_img', default=0.001, #0.8
+    parser.add_argument('--num_img', default=1, #0.8
                         type=float)
 
     #Hyper-parameters
@@ -88,6 +88,8 @@ def main():
                                  shuffle = True, pin_memory = True, num_workers = args.workers)
 
     N = len(trainloader.dataset)
+    print(N)
+    return
 
     model = VAE_CELEBA().to(args.device) #Model used
 
