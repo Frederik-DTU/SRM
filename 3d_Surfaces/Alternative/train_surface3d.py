@@ -80,7 +80,7 @@ def main():
                                  shuffle = True, pin_memory=True, num_workers = args.workers)
     else:
         trainloader = DataLoader(dataset = DATA, batch_size= args.batch_size,
-                                 shuffle = True, num_workers = args.workers)
+                                 shuffle = True)
     N = len(trainloader.dataset)
 
     model = VAE_3d().to(args.device) #Model used

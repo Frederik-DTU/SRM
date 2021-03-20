@@ -88,6 +88,7 @@ def main():
                                  shuffle = True, pin_memory = True, num_workers = args.workers)
 
     N = len(trainloader.dataset)
+    print(N)
 
     model = VAE_CELEBA().to(args.device) #Model used
 
