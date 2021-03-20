@@ -28,12 +28,12 @@ from typing import List, Any
 #The training script should be modified for the version below.
 class VAE_3d(nn.Module):
     def __init__(self,
-                 fc_h: List[int] = [3,100, 50, 25],
-                 fc_g: List[int] = [2, 25, 50, 100, 3],
+                 fc_h: List[int] = [3, 100],
+                 fc_g: List[int] = [2, 100, 3],
                  fc_mu: List[int] = [100, 2],
                  fc_var: List[int] = [100, 2],
-                 fc_h_act: List[Any] = [nn.ELU, nn.ELU, nn.ELU],
-                 fc_g_act: List[Any] = [nn.ELU, nn.ELU, nn.ELU, nn.Identity],
+                 fc_h_act: List[Any] = [nn.ELU],
+                 fc_g_act: List[Any] = [nn.ELU, nn.Identity],
                  fc_mu_act: List[Any] = [nn.Identity],
                  fc_var_act: List[Any] = [nn.Sigmoid]
                  ):
@@ -50,8 +50,8 @@ class VAE_3d(nn.Module):
         
         self.num_fc_h = len(fc_h)
         self.num_fc_g = len(fc_g)
-        self.num_fc_mu = len(fc_h)
-        self.num_fc_var = len(fc_h)
+        self.num_fc_mu = len(fc_mu)
+        self.num_fc_var = len(fc_var)
         
         self.encoder = self.encode()
         self.mu_net = self.mu_layer()

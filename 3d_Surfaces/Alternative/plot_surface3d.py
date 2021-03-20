@@ -51,13 +51,13 @@ def x3_sphere(x1, x2):
 #%% Loading data and model
 
 #Hyper-parameters
-epoch_load = '100000'
+epoch_load = '100'
 lr = 0.0001
 device = 'cpu'
 
 #Parabolic data
-data_name = 'sphere'
-fun = x3_R2
+data_name = 'hyper_para'
+fun = x3_parabolic
 
 #Hyper parabolic data
 #data_name = 'hyper_para'
@@ -72,7 +72,7 @@ fun = x3_R2
 #fun = x3_sphere
 
 #Loading files
-data_path = 'Data/'+data_name+'.csv'
+data_path = '../Data/'+data_name+'.csv'
 file_model_save = 'trained_models/'+data_name+'/'+data_name+'_epoch_'+epoch_load+'.pt'
 data_plot = plot_3d_fun(N_grid=100, fun = fun)
 

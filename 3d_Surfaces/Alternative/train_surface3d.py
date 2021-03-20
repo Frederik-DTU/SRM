@@ -32,9 +32,9 @@ from VAE_surface3d import VAE_3d
 def parse_args():
     parser = argparse.ArgumentParser()
     # File-paths
-    parser.add_argument('--data_path', default='Data/parabolic.csv', # 'Data/surface_R2.csv'
+    parser.add_argument('--data_path', default='../Data/hyper_para.csv', # 'Data/surface_R2.csv'
                         type=str)
-    parser.add_argument('--save_model_path', default='trained_models/parabolic/parabolic', #'trained_models/surface_R2'
+    parser.add_argument('--save_model_path', default='trained_models/hyper_para/hyper_para', #'trained_models/surface_R2'
                         type=str)
     parser.add_argument('--save_step', default=100,
                         type=int)
@@ -54,7 +54,7 @@ def parse_args():
     #Continue training or not
     parser.add_argument('--con_training', default=0,
                         type=int)
-    parser.add_argument('--load_model_path', default='trained_models/parabolic_epoch_5000.pt',
+    parser.add_argument('--load_model_path', default='trained_models/hyper_para_epoch_5000.pt',
                         type=str)
 
 
@@ -124,7 +124,7 @@ def main():
         train_loss_elbo.append(train_epoch_loss)
         train_loss_rec.append(running_loss_rec/N)
         train_loss_kld.append(running_loss_kld/N)
-        #print(f"Epoch {epoch+1}/{epochs} - loss: {train_epoch_loss:.4f}")
+        print(f"Epoch {epoch+1}/{epochs} - loss: {train_epoch_loss:.4f}")
 
 
         if (epoch+1) % args.save_step == 0:
