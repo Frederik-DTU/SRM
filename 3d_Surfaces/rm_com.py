@@ -96,6 +96,46 @@ class riemannian_data:
         
         return mu_z, mu_g
     
+    def get_geodesic_using_metric(self, Z, g_fun, Jg_fun, alpha = 0.01, print_conv = False):
+        
+        grad_E = self.eps+1
+        j = 0        
+        loss = []
+        E_fun = []
+        Z_new = Z[:]
+                
+        while (grad_E>self.eps and j<=self.max_iter):
+            grad_E = 0.0
+            G = self.get_decoded(Z_new)
+            
+            E = self.energy_fun(G)
+            for i in range(1, self.T):
+                jacobi = torch.transpose(Jg_fun(Z_new[i],0,1))
+                dE_dZ = -torch.matmul(jacobi, g_fun(Z_new[i+1])+g_fun(Z_new[i-1])-
+                                      2*g_fun(Z_new[i]))
+                
+                Z_new[i] = Z_new[i]-alpha*dE_dZ
+                
+                grad_E += torch.dot(dE_dZ, dE_dZ)
+            
+            E_fun.append(E)
+            loss.append(grad_E)
+            j += 1        
+        
+        G_old = self.get_decoded(Z)
+        L_old = self.arc_length(G_old)
+        
+        G_new = self.get_decoded(Z_new)
+        L_new = self.arc_length(G_new)
+        
+        if print_conv:
+            if grad_E>self.eps:
+                print("The geodesic has converged!")
+            else:
+                print("The algorithm stopped due to maximum number of iterations!")
+        
+        return loss, E_fun, Z_new, G_old, G_new, L_old, L_new
+    
     def get_geodesic_distance_to_point(self, mu, Z, alpha = 0.01):
         
         n = len(Z)
@@ -110,24 +150,40 @@ class riemannian_data:
             
         return L, dL
     
-    def get_frechet_mean(self, Z, alpha_mu = 0.01, alpha_d = 0.01):
+    def get_frechet_mean(self, Z, batch = 0, alpha_mu = 0.01, alpha_d = 0.01):
         
         muz_init, mug_init = self.get_euclidean_mean(Z)
         j = 0
         L = []
         step = self.eps+1
         mu = muz_init
+        N = len(Z)
         
-        while (step>self.eps and j<=self.max_iter):
-            
-            L_val, dL = self.get_geodesic_distance_to_point(mu, Z, alpha_d)
-            print(j)
-            L.append(L_val)
-            mu = mu-alpha_mu*dL
-            step = torch.dot(dL, dL)
-            print(step)
-            
-            j += 1
+        if batch:
+            while (step>self.eps and j<=self.max_iter):
+                
+                idx = torch.randint(0,N,(batch,))
+                Z_batch = Z[idx]
+                
+                L_val, dL = self.get_geodesic_distance_to_point(mu, Z_batch, alpha_d)
+                L.append(L_val)
+                mu = mu-alpha_mu*dL
+                step = torch.dot(dL, dL)
+                j += 1
+                print(f"Iteration {j} - Gradient_Step: {step:.4f}, \tMAX_ITER={self.max_iter}"
+                      f", TOLERANCE="
+                      f"{self.eps:.4f}")
+        else:
+            while (step>self.eps and j<=self.max_iter):
+                
+                L_val, dL = self.get_geodesic_distance_to_point(mu, Z, alpha_d)
+                L.append(L_val)
+                mu = mu-alpha_mu*dL
+                step = torch.dot(dL, dL)
+                j += 1
+                print(f"Iteration {j} - Gradient_Step: {step:.4f}, \tMAX_ITER={self.max_iter}"
+                      f", TOLERANCE="
+                      f"{self.eps:.4f}")
         
         mu_z = mu
         mu_g = self.model_decoder(mu_z)

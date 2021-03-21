@@ -130,7 +130,8 @@ gamma_linear = rm.interpolate(hx, hy)
 gamma_geodesic = rm.geodesic_path_al1(gamma_linear, alpha = 0.01)
 
 Z = model.h(DATA)[0]
-test = rm.get_frechet_mean(Z[0:100])
+#test = rm.get_frechet_mean(Z[0:100])
+test2 = rm.get_frechet_mean(Z, batch=1000)
 
 z_old = data_plot.convert_list_to_np(gamma_linear)
 z_new = data_plot.convert_list_to_np(gamma_geodesic[2])
