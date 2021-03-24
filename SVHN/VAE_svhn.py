@@ -158,7 +158,7 @@ class VAE_SVHN(nn.Module):
         
         return z, x_hat, mu, std, kld.mean(), -rec_loss.mean(), elbo
     
-    def get_encoded(self, x):
+    def h(self, x):
         
         mu, std = self.encoder(x)
         
@@ -166,7 +166,7 @@ class VAE_SVHN(nn.Module):
         
         return mu, std, z
         
-    def get_decoded(self, z):
+    def g(self, z):
         
         x_hat = self.decoder(z)
         

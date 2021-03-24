@@ -63,6 +63,7 @@ class riemannian_data:
         E = 0.0
         for i in range(self.T):
             g = G[i+1]-G[i]
+            g = g.view(-1)
             E += torch.dot(g, g)
 
         #Removed since there is a multiplication with the step size
@@ -202,6 +203,7 @@ class riemannian_data:
             E = self.energy_fun(G)
             for i in range(1, self.T):
                 dE_dZ = grad(outputs = E, inputs = Z_new[i], retain_graph=True)[0]
+                dE_dZ = dE_dZ.view(-1)
                 
                 Z_new[i] = Z_new[i]-alpha*dE_dZ
                 
