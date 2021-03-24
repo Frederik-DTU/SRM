@@ -17,13 +17,13 @@ module swap cuda/8.0
 module swap cudnn/v7.0-prod-cuda8
 
 python3 train_surface3d.py \
-    --data_path ../Data/hyper_para.csv \
+    --data_path Data/hyper_para.csv \
     --save_model_path trained_models/hyper_para/hyper_para \
     --save_step 5000 \
     --device cuda \
     --epochs 100000 \
     --batch_size 100 \
     --workers 4 \
-    --lr 0.0001 \
-    --con_training 1 \
+    --lr 0.00001  \
+    --con_training 0 \
     --load_model_path trained_models/hyper_para/hyper_para_epoch_60000.pt
