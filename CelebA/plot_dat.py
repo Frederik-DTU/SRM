@@ -6,6 +6,7 @@ Created on Tue Jan 12 01:08:27 2021
 """
 
 import numpy as np
+import torch
 import matplotlib.pyplot as plt
     
 def x3_fun(x1, x2):
@@ -21,6 +22,30 @@ class plot_3d_fun(object):
         self.fun = fun
         self.N_grid = N_grid
         self.fig_size = fig_size
+        
+    def convert_list_to_np(self, Z):
+        
+        N = len(Z)
+        n = len(Z[0])
+        Z_new = torch.empty(N, n)
+        
+        for i in range(N):
+            Z_new[i] = Z[i]
+            
+        return Z_new.detach().numpy()
+    
+    def cat_tensors(self, Z, dim = 0):
+        
+        N = len(Z)
+        dim = list(Z[0].shape)
+        dim[0] = N
+        
+        Z_tensor = torch.empty(dim)
+        
+        for i in range(N):
+            Z_tensor[i] = Z[i]
+        
+        return Z_tensor
     
     def plot_geodesic_in_Z_2d(self, *args):
         
