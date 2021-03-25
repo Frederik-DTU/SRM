@@ -89,7 +89,6 @@ def main():
 
     N = len(trainloader.dataset)
     print(N)
-    return
 
     model = VAE_CELEBA().to(args.device) #Model used
 
@@ -133,7 +132,7 @@ def main():
         train_loss_elbo.append(train_epoch_loss)
         train_loss_rec.append(running_loss_rec/N)
         train_loss_kld.append(running_loss_kld/N)
-        #print(f"Epoch {epoch+1}/{epochs} - loss: {train_epoch_loss:.4f}")
+        print(f"Epoch {epoch+1}/{epochs} - loss: {train_epoch_loss:.4f}")
 
 
         if (epoch+1) % args.save_step == 0:

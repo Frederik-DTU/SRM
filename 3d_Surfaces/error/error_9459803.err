@@ -1,0 +1,8 @@
+usage: train_surface3d.py [-h] [--data_path DATA_PATH]
+                          [--save_model_path SAVE_MODEL_PATH]
+                          [--save_step SAVE_STEP] [--device DEVICE]
+                          [--epochs EPOCHS] [--batch_size BATCH_SIZE]
+                          [--lr LR] [--workers WORKERS]
+                          [--con_training CON_TRAINING]
+                          [--load_model_path LOAD_MODEL_PATH]
+train_surface3d.py: error: argument --con_training: expected one argument

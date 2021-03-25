@@ -1,0 +1,30 @@
+Traceback (most recent call last):
+  File "train_surface3d.py", line 155, in <module>
+    main()
+  File "train_surface3d.py", line 74, in main
+    df = pd.read_csv(args.data_path, index_col=0)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/pandas/io/parsers.py", line 610, in read_csv
+    return _read(filepath_or_buffer, kwds)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/pandas/io/parsers.py", line 468, in _read
+    return parser.read(nrows)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/pandas/io/parsers.py", line 1069, in read
+    df = DataFrame(col_dict, columns=columns, index=index)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/pandas/core/frame.py", line 529, in __init__
+    mgr = init_dict(data, index, columns, dtype=dtype)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/pandas/core/internals/construction.py", line 287, in init_dict
+    return arrays_to_mgr(arrays, data_names, index, columns, dtype=dtype)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/pandas/core/internals/construction.py", line 95, in arrays_to_mgr
+    return create_block_manager_from_arrays(arrays, arr_names, axes)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/pandas/core/internals/managers.py", line 1701, in create_block_manager_from_arrays
+    blocks = _form_blocks(arrays, names, axes)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/pandas/core/internals/managers.py", line 1754, in _form_blocks
+    block_type = get_block_type(v)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/pandas/core/internals/blocks.py", line 2688, in get_block_type
+    elif is_datetime64tz_dtype(values.dtype):
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/pandas/core/dtypes/common.py", line 426, in is_datetime64tz_dtype
+    return DatetimeTZDtype.is_dtype(arr_or_dtype)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/pandas/core/dtypes/base.py", line 280, in is_dtype
+    if isinstance(dtype, (ABCSeries, ABCIndexClass, ABCDataFrame, np.dtype)):
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/pandas/core/dtypes/generic.py", line 32, in _check
+    return getattr(inst, attr, "_typ") in comp
+KeyboardInterrupt
