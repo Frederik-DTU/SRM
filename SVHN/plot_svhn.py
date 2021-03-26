@@ -30,7 +30,7 @@ from plot_dat import plot_3d_fun
 #%% Loading data and model
 
 dataroot = "../../Data/SVHN"
-file_model_save = 'trained_models/svhn_epoch_5000.pt'
+file_model_save = 'trained_models/svhn_epoch_14000.pt'
 device = 'cpu'
 lr = 0.0002
 
