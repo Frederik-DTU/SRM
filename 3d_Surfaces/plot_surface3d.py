@@ -51,8 +51,8 @@ def x3_sphere(x1, x2):
 #%% Loading data and model
 
 #Hyper-parameters
-epoch_load = '100000'
-lr = 0.00001
+epoch_load = '50000'
+lr = 0.0001
 device = 'cpu'
 
 #Parabolic data
@@ -83,7 +83,7 @@ DATA = torch.transpose(DATA, 0, 1)
 
 #Loading model
 model = VAE_3d().to(device)
-optimizer = optim.SGD(model.parameters(), lr=lr)
+optimizer = optim.Adam(model.parameters(), lr=lr)
 
 checkpoint = torch.load(file_model_save, map_location=device)
 model.load_state_dict(checkpoint['model_state_dict'])
