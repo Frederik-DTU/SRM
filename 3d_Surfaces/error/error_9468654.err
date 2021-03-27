@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "train_surface3d.py", line 155, in <module>
+    main()
+  File "train_surface3d.py", line 88, in main
+    optimizer = optim.ADAM(model.parameters(), lr=args.lr)
+AttributeError: module 'torch.optim' has no attribute 'ADAM'

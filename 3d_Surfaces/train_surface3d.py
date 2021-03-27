@@ -85,7 +85,7 @@ def main():
 
     model = VAE_3d().to(args.device) #Model used
 
-    optimizer = optim.SGD(model.parameters(), lr=args.lr)
+    optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
     if args.con_training:
         checkpoint = torch.load(args.load_model_path, map_location=args.device)

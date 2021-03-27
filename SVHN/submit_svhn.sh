@@ -28,4 +28,4 @@ python3 train_svhn.py \
     --batch_size 100 \
     --lr 0.0002 \
     --con_training 1 \
-    --load_model_path trained_models/svhn_epoch_14000.pt
+    --load_model_path trained_models/svhn_epoch_19000.pt

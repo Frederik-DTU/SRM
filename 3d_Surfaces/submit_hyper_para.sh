@@ -24,6 +24,6 @@ python3 train_surface3d.py \
     --epochs 100000 \
     --batch_size 100 \
     --workers 4 \
-    --lr 0.00001  \
-    --con_training 1 \
+    --lr 0.0001  \
+    --con_training 0 \
     --load_model_path trained_models/hyper_para/hyper_para_epoch_50000.pt

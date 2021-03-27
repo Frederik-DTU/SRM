@@ -28,4 +28,4 @@ python3 train_celeba.py \
     --batch_size 100 \
     --lr 0.0002 \
     --con_training 1 \
-    --load_model_path trained_models/celeba_epoch_1200.pt
+    --load_model_path trained_models/celeba_epoch_1800.pt
