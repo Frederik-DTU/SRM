@@ -50,15 +50,15 @@ def parse_args():
                         type=int)
     parser.add_argument('--epochs', default=10000, #50000
                         type=int)
-    parser.add_argument('--batch_size', default=4,
+    parser.add_argument('--batch_size', default=6,
                         type=int)
     parser.add_argument('--lr', default=0.0002,
                         type=float)
 
     #Continue training or not
-    parser.add_argument('--con_training', default=0,
+    parser.add_argument('--con_training', default=1,
                         type=int)
-    parser.add_argument('--load_model_path', default='trained_models/fun_epoch_5000.pt',
+    parser.add_argument('--load_model_path', default='trained_models/fun_epoch_8200.pt',
                         type=str)
 
 

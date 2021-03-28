@@ -133,15 +133,18 @@ class riemannian_data:
                 
                 grad_E += torch.dot(dE_dZ, dE_dZ)
             
-            E_fun.append(E.item())
-            loss.append(grad_E.item())
-            
             if count>1:
                 if (E_fun[-1]-E_fun[-2]>0):
+                    E_fun.append(E_fun[-1])
+                    loss.append(loss[-1])
                     alpha /= self.div_fac
                 else:
+                    E_fun.append(E.item())
+                    loss.append(grad_E.item())
                     Z_new = Z_dummy[:]
             else:
+                E_fun.append(E.item())
+                loss.append(grad_E.item())
                 Z_new = Z_dummy[:]
             
             count += 1        
@@ -187,15 +190,16 @@ class riemannian_data:
             
             mu_dummy = mu_z-alpha_mu*dL
             step = torch.dot(dL, dL)
-            
-            L.append(L_val.item())
-            
+                        
             if count>1:
                 if (L[-1]-L[-2]>0):
+                    L.append(L[-1])
                     alpha_mu /= self.div_fac
                 else:
+                    L.append(L_val.item())
                     mu_z = mu_dummy
             else:
+                L.append(L_val.item())
                 mu_z = mu_dummy
 
             count += 1
@@ -228,15 +232,18 @@ class riemannian_data:
                 
                 grad_E += torch.dot(dE_dZ, dE_dZ)
             
-            E_fun.append(E.item())
-            loss.append(grad_E.item())
-            
             if count>1:
                 if (E_fun[-1]-E_fun[-2]>0):
+                    E_fun.append(E_fun[-1])
+                    loss.append(loss[-1])
                     alpha /= self.div_fac
                 else:
+                    E_fun.append(E.item())
+                    loss.append(grad_E.item())
                     Z_new = Z_dummy[:]
             else:
+                E_fun.append(E.item())
+                loss.append(grad_E.item())
                 Z_new = Z_dummy[:]
                 
             count += 1  

@@ -30,7 +30,7 @@ from plot_dat import plot_3d_fun
 #%% Loading data and model
 
 dataroot = "Data" #Directory for dataset
-file_model_save = 'trained_models/fun_epoch_10000.pt' #'trained_models/hyper_para/para_3d_epoch_100000.pt'
+file_model_save = 'trained_models/fun_epoch_1000.pt' #'trained_models/hyper_para/para_3d_epoch_100000.pt'
 device = 'cpu'
 lr = 0.0002
 
@@ -45,7 +45,7 @@ dataset = dset.ImageFolder(root=dataroot,
                                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
                            ]))
 
-trainloader = DataLoader(dataset, batch_size=4,
+trainloader = DataLoader(dataset, batch_size=6,
                          shuffle=False, num_workers=0)
 
 #Plotting the trained model
