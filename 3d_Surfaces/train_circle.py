@@ -20,6 +20,7 @@ https://pytorch.org/tutorials/recipes/recipes/tuning_guide.html
 
 import torch
 import torch.optim as optim
+from torch import nn
 from torch.utils.data import DataLoader
 import argparse
 import pandas as pd
@@ -32,9 +33,9 @@ from VAE_surface3d import VAE_3d
 def parse_args():
     parser = argparse.ArgumentParser()
     # File-paths
-    parser.add_argument('--data_path', default='Data/parabolic.csv', # 'Data/surface_R2.csv'
+    parser.add_argument('--data_path', default='Data/circle.csv', # 'Data/surface_R2.csv'
                         type=str)
-    parser.add_argument('--save_model_path', default='trained_models/parabolic/parabolic', #'trained_models/surface_R2'
+    parser.add_argument('--save_model_path', default='trained_models/circle/circle', #'trained_models/surface_R2'
                         type=str)
     parser.add_argument('--save_step', default=100,
                         type=int)
@@ -54,7 +55,7 @@ def parse_args():
     #Continue training or not
     parser.add_argument('--con_training', default=0,
                         type=int)
-    parser.add_argument('--load_model_path', default='trained_models/parabolic_epoch_5000.pt',
+    parser.add_argument('--load_model_path', default='trained_models/circle_epoch_5000.pt',
                         type=str)
 
 
@@ -84,7 +85,14 @@ def main():
         
     N = len(trainloader.dataset)
 
-    model = VAE_3d().to(args.device) #Model used
+    model = VAE_3d(fc_h = [3, 100],
+                 fc_g = [1, 100, 3],
+                 fc_mu = [100, 1],
+                 fc_var = [100, 1],
+                 fc_h_act = [nn.ELU],
+                 fc_g_act = [nn.ELU, nn.Identity],
+                 fc_mu_act = [nn.Identity],
+                 fc_var_act = [nn.Sigmoid]).to(args.device) #Model used
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
