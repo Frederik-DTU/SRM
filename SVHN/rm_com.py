@@ -26,7 +26,7 @@ class riemannian_data:
                  model_encoder, 
                  model_decoder,
                  T = 10,
-                 MAX_ITER=1000,
+                 MAX_ITER=10000,
                  eps = 0.01,
                  div_fac = 10):
         
@@ -212,19 +212,20 @@ class riemannian_data:
         return L, muz_init, mug_init, mu_z, mu_g
     
     def geodesic_path_al1(self, Z, alpha = 0.1, print_conv = False):
-                
+        
         grad_E = self.eps+1
         count = 0        
         loss = []
         E_fun = []
         Z_new = Z[:]
         Z_dummy = Z[:]
-                
+        
+        G = self.get_decoded(Z_dummy)
+        E = self.energy_fun(G)
+        E_fun.append(E.item())
         while (grad_E>self.eps and count<=self.MAX_ITER):
             grad_E = 0.0
-            G = self.get_decoded(Z_new)
             
-            E = self.energy_fun(G)
             for i in range(1, self.T):
                 dE_dZ =( grad(outputs = E, inputs = Z_new[i], retain_graph=True)[0]).view(-1)
                 
@@ -232,25 +233,22 @@ class riemannian_data:
                 
                 grad_E += torch.dot(dE_dZ, dE_dZ)
             
-            if count>1:
-                if (E_fun[-1]-E_fun[-2]>0):
-                    E_fun.append(E_fun[-1])
-                    loss.append(loss[-1])
-                    alpha /= self.div_fac
-                else:
-                    E_fun.append(E.item())
-                    loss.append(grad_E.item())
-                    Z_new = Z_dummy[:]
+            G = self.get_decoded(Z_dummy)
+            E = self.energy_fun(G)
+            loss.append(grad_E.item())
+            
+            if (E.item()-E_fun[-1]>0):
+                alpha /= self.div_fac
             else:
                 E_fun.append(E.item())
-                loss.append(grad_E.item())
                 Z_new = Z_dummy[:]
-                
-            count += 1  
             
             if print_conv:
-                print(f"Iteration {count}/{self.MAX_ITER} - Loss: {grad_E:.4f} " 
+                print(f"Iteration {count}/{self.MAX_ITER} - E_fun={E_fun[-1]:.4f}, "
+                      f"grad_E={loss[-1]:.4f} " 
                       f"(alpha={alpha:.8f})")
+                
+            count += 1  
         
         G_old = self.get_decoded(Z)
         L_old = self.arc_length(G_old)

@@ -27,13 +27,13 @@ import numpy as np
 
 #Own files
 from plot_dat import plot_3d_fun
-from rm_com import riemannian_data
+from rm_com_v2 import riemannian_data
 from VAE_celeba import VAE_CELEBA
 
 #%% Loading data and model
 
-dataroot = "Data" #Directory for dataset
-file_model_save = 'trained_models/fun_epoch_8200.pt' #'trained_models/hyper_para/para_3d_epoch_100000.pt'
+dataroot = "../../Data/CelebA/celeba" #Directory for dataset
+file_model_save = 'trained_models/celeba_epoch_600.pt' #'trained_models/hyper_para/para_3d_epoch_100000.pt'
 device = 'cpu'
 lr = 0.0002
 
@@ -48,7 +48,7 @@ dataset = dset.ImageFolder(root=dataroot,
                                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
                            ]))
 
-trainloader = DataLoader(dataset, batch_size=4,
+trainloader = DataLoader(dataset, batch_size=64,
                          shuffle=False, num_workers=0)
 
 #Plotting the trained model
@@ -68,58 +68,88 @@ model.eval()
 #%% Getting points on the learned manifold
 
 #Get 3 images to compute geodesics for
-subset_indices = [1, 5, 0, 5, 2, 5] # select your indices here as a list
+subset_indices = [0, 1, 2, 3, 4, 5] # select your indices here as a list
 dataset_subset = torch.utils.data.Subset(dataset, subset_indices)
 
 #%% Getting geodesic between learned points
 
 #Parameters for the Riemannian computations
 T = 10
+eps = 0.1
 
 #Loading module
-rm = riemannian_data(model.h, model.g, T = T, eps = 1000)
+rm = riemannian_data(model.h, model.g, T = T, eps = eps, MAX_ITER=100,
+                     div_fac=2)
 
 #%%Estimating geodesic between points
 
-img_height = 2*34
+img_height = img_size+2,
 img_n = len(subset_indices)
 
+G_plot = []
 lst_midpoint = []
-G_plot = torch.empty(1)
 
-fig, ax = plt.subplots(3,1, figsize=(8,6))
-ax[0].set_title("Geodesic cuves and Linear interpolation between images")
+i = 0 #remove until for loop start
+    
+x = (dataset_subset[2*i][0]).view(1, 3, img_size, img_size)
+y = (dataset_subset[2*i+1][0]).view(1, 3, img_size, img_size)
+
+hx = model.h(x)[0]
+hy = model.h(y)[0]
+
+gamma_linear = rm.interpolate(hx, hy)
+gamma_geodesic = rm.geodesic_path_al1(gamma_linear, alpha = 0.1, print_conv = True)
+u0 = gamma_geodesic[4]
+u0 = (u0[1]-u0[0]/T).view(-1)
+test = rm.parallel_translation_al2(gamma_linear, u0)
+
+#Remove above
+
 for i in range(int(img_n/2)):
-    x = (dataset_subset[2*i][0]).view(1, 3, 64, 64)
-    y = (dataset_subset[2*i+1][0]).view(1, 3, 64, 64)
+    
+    x = (dataset_subset[2*i][0]).view(1, 3, img_size, img_size)
+    y = (dataset_subset[2*i+1][0]).view(1, 3, img_size, img_size)
     
     hx = model.h(x)[0]
     hy = model.h(y)[0]
     
     gamma_linear = rm.interpolate(hx, hy)
-    gamma_geodesic = rm.geodesic_path_al1(gamma_linear, alpha = 0.001, print_conv = True)
+    gamma_geodesic = rm.geodesic_path_al1(gamma_linear, alpha = 0.1, print_conv = True)
 
     G_old = (data_plot.cat_tensors(gamma_geodesic[3])).detach()
     G_new = (data_plot.cat_tensors(gamma_geodesic[4])).detach()
-    
-    lst_midpoint.append(G_new[int(T/2)])
         
-    G_plot = torch.cat((G_old, G_new), dim = 0)
+    G_plot.append(torch.cat((G_old, G_new), dim = 0))
+    
+    x = (G_old[int(T/2)]).view(1, 3, img_size, img_size)
+    y = (G_new[int(T/2)]).view(1, 3, img_size, img_size)
+    lst_midpoint.append(torch.cat((x, y), dim = 0))
 
     arc_length = ['{0:.4f}'.format(gamma_geodesic[5]), '{0:.4f}'.format(gamma_geodesic[6])]
     tick_list = [img_height/2, img_height/2+img_height]
     
-    ax[i].imshow(vutils.make_grid(G_plot, padding=2, normalize=True, nrow=T+1).permute(1, 2, 0))
+fig, ax = plt.subplots(3,1, figsize=(8,6))
+ax[0].set_title("Geodesic cuves and Linear interpolation between images")
+for i in range(int(img_n/2)):
+    
+    ax[i].imshow(vutils.make_grid(G_plot[i], padding=2, normalize=True, nrow=T+1).permute(1, 2, 0))
     ax[i].axes.get_xaxis().set_visible(False)
     ax[i].set_yticks(tick_list)
     ax[i].set_yticklabels(arc_length)
 
-#%%Estimating geodesic between points
-
 N = len(lst_midpoint)
 for i in range(N):
-    plt.figure(figsize=(2,1))
+    plt.figure(figsize=(8,6))
     plt.imshow(np.transpose(vutils.make_grid(lst_midpoint[i], padding=2, normalize=True, nrow=T+1),
                             (1,2,0)))
+
+#%% Computing Fréchet mean for sample
+
+#https://fairyonice.github.io/Welcome-to-CelebA.html
+
+#%% Geodesic Distance matrix
+
+    
+    
     
     
