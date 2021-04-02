@@ -20,6 +20,7 @@ import torch
 import torch.optim as optim
 import pandas as pd
 import numpy as np
+from torch import nn
 
 #Own files
 from plot_dat import plot_3d_fun
@@ -51,12 +52,13 @@ def x3_sphere(x1, x2):
 #%% Loading data and model
 
 #Hyper-parameters
-epoch_load = '100000'
+epoch_load = '30000'
 lr = 0.0001
 device = 'cpu'
+latent_dim = 1
 
 #Parabolic data
-data_name = 'hyper_para'
+data_name = 'circle'
 fun = x3_hyper_para
 
 #Hyper parabolic data
@@ -82,7 +84,14 @@ DATA = torch.Tensor(df.values)
 DATA = torch.transpose(DATA, 0, 1)
 
 #Loading model
-model = VAE_3d().to(device)
+model = model = VAE_3d(fc_h = [3, 100],
+                 fc_g = [latent_dim, 100, 3],
+                 fc_mu = [100, latent_dim],
+                 fc_var = [100, latent_dim],
+                 fc_h_act = [nn.ELU],
+                 fc_g_act = [nn.ELU, nn.Identity],
+                 fc_mu_act = [nn.Identity],
+                 fc_var_act = [nn.Sigmoid]).to(device) #Model used
 optimizer = optim.Adam(model.parameters(), lr=lr)
 
 checkpoint = torch.load(file_model_save, map_location=device)
