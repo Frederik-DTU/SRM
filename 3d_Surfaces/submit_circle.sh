@@ -25,5 +25,5 @@ python3 train_circle.py \
     --batch_size 100 \
     --workers 4 \
     --lr 0.0001  \
-    --con_training 0 \
-    --load_model_path trained_models/circle/circle_epoch_50000.pt
+    --con_training 1 \
+    --load_model_path trained_models/circle/circle_epoch_70000.pt
