@@ -30,7 +30,7 @@ from plot_dat import plot_3d_fun
 #%% Loading data and model
 
 dataroot = "../../Data/CelebA/celeba" #Directory for dataset
-file_model_save = 'trained_models/celeba_epoch_2400.pt' #'trained_models/hyper_para/para_3d_epoch_100000.pt'
+file_model_save = 'trained_models/celeba_epoch_4300.pt' #'trained_models/hyper_para/para_3d_epoch_100000.pt'
 device = 'cpu'
 lr = 0.0002
 

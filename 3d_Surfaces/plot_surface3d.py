@@ -55,11 +55,11 @@ def x3_sphere(x1, x2):
 epoch_load = '100000'
 lr = 0.0001
 device = 'cpu'
-latent_dim = 1
+latent_dim = 2
 
 #Parabolic data
-data_name = 'circle'
-fun = x3_hyper_para
+data_name = 'sphere'
+fun = x3_sphere
 
 #Hyper parabolic data
 #data_name = 'hyper_para'
