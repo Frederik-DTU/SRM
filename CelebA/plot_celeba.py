@@ -14,6 +14,11 @@ https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html
 
 #%% Modules
 
+import os, sys
+currentdir = os.path.dirname(os.path.realpath(__file__))
+parentdir = os.path.dirname(currentdir)
+sys.path.append(parentdir)
+
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
@@ -30,7 +35,7 @@ from plot_dat import plot_3d_fun
 #%% Loading data and model
 
 dataroot = "../../Data/CelebA/celeba" #Directory for dataset
-file_model_save = 'trained_models/celeba_epoch_4300.pt' #'trained_models/hyper_para/para_3d_epoch_100000.pt'
+file_model_save = 'trained_models/celeba_epoch_6300.pt' #'trained_models/hyper_para/para_3d_epoch_100000.pt'
 device = 'cpu'
 lr = 0.0002
 

@@ -14,6 +14,13 @@ https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html
 
 #%% Modules
 
+#Loading own module from parent folder
+import os, sys
+currentdir = os.path.dirname(os.path.realpath(__file__))
+parentdir = os.path.dirname(currentdir)
+sys.path.append(parentdir)
+
+#Modules
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
@@ -30,7 +37,7 @@ from plot_dat import plot_3d_fun
 #%% Loading data and model
 
 dataroot = "../../Data/SVHN"
-file_model_save = 'trained_models/svhn_epoch_38000.pt'
+file_model_save = 'trained_models/svhn_epoch_50000.pt'
 device = 'cpu'
 lr = 0.0002
 
