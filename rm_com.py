@@ -59,7 +59,12 @@ class riemannian_data:
         
         G_dif = G[1:]-G[0:-1]
         E += torch.norm(G_dif, 'fro')**2
-
+        
+        #Aletnative for two above lines
+        #for i in range(self.T-2):
+        #    g = (G[i+1]-G[i]).view(-1)
+        #    E += torch.dot(g, g)
+        
         #Removed since there is a multiplication with the step size
         E /= 2
         E *= self.T
@@ -81,11 +86,15 @@ class riemannian_data:
         
         L = 0.0
         
-        L += torch.norm(G[1]-g0, 'fro')
-        L += torch.norm(gT-G[-1], 'fro')
+        g = (G[0]-g0).view(-1)
+        L += torch.sqrt(torch.dot(g, g))
         
-        G_dif = G_dif = G[1:]-G[0:-1]
-        L += torch.norm(G_dif, 'fro')
+        g = (gT-G[-1]).view(-1)
+        L += torch.sqrt(torch.dot(g, g))
+        
+        for i in range(self.T-2):
+            g = (G[i+1]-G[i]).view(-1)
+            L += torch.sqrt(torch.dot(g, g))
         
         return L
     
@@ -125,7 +134,7 @@ class riemannian_data:
         for i in range(0, N):
             for j in range(i+1,N):
                 Z_int = self.interpolate(Z[i], Z[j])
-                _, _, _, _, _, _, L_new = self.geodesic_path_al1(Z_int, alpha = alpha)
+                _, _, _, _, _, _, L_new, _ = self.geodesic_path_al1(Z_int, alpha = alpha)
                 dmat[i][j] = L_new.item()
                 dmat[j][i] = L_new.item()
                 
@@ -187,7 +196,8 @@ class riemannian_data:
         
         return loss, E_fun, Z_new, G_old, G_new, L_old, L_new
     
-    def get_frechet_mean(self, Z, alpha_mu = 0.1, alpha_g = 0.1):
+    def get_frechet_mean(self, Z, alpha_mu = 0.1, alpha_g = 0.1, eps_i = 10e-4,
+                         print_conv = False):
         
         count = 0
         L = []
@@ -198,34 +208,39 @@ class riemannian_data:
         mu_z = muz_init
         mu_dummy = mu_z
         
-        while (step>self.eps and count<=self.MAX_ITER):
-            
-            L_val = 0.0
-            for i in range(N):
-                Z_int = self.interpolate(mu_z, Z[i])
-                _, _, _, _, _, _, L_new = self.geodesic_path_al1(Z_int, alpha = alpha_g)
-                L_val += L_new
-                
-            dL = (grad(outputs = L_val, inputs = mu_z)[0]).view(-1)
+        L_val = 0.0
+        for i in range(N):
+            Z_int = self.interpolate(mu_z, Z[i])
+            _, _, _, _, _, _, L_new, _ = self.geodesic_path_al1(Z_int, alpha = alpha_g)
+            L_val += L_new
+        L.append(L_val.item())
+        dL = (grad(outputs = L_val, inputs = mu_z)[0]).view(-1)
+        
+        while (step>self.eps and count<self.MAX_ITER):
             
             mu_dummy = mu_z-alpha_mu*dL
-            step = torch.dot(dL, dL)
-                        
-            if count>1:
-                if (L[-1]-L[-2]>0):
-                    L.append(L[-1])
-                    alpha_mu /= self.div_fac
-                else:
-                    L.append(L_val.item())
-                    mu_z = mu_dummy
+            step = torch.dot(dL, dL).item()
+            
+            L_dummy = 0.0
+            for i in range(N):
+                Z_int = self.interpolate(mu_dummy, Z[i])
+                _, _, _, _, _, _, L_new, _ = self.geodesic_path_al1(Z_int, alpha = alpha_g)
+                L_dummy += L_new
+                
+            if (L_dummy.item()-L_val.item()>0):
+                alpha_mu /= self.div_fac
             else:
+                L_val = L_dummy
                 L.append(L_val.item())
                 mu_z = mu_dummy
-
+                dL = (grad(outputs = L_val, inputs = mu_z)[0]).view(-1)
+                
             count += 1
 
-            print(f"Iteration {count}/{self.MAX_ITER} - Gradient_Step: {step:.4f}\t" 
-                  f"TOLERANCE={self.eps:.4f} (alpha_mu={alpha_mu:.8f})")
+            if print_conv:
+                print(f"Iteration {count}/{self.MAX_ITER} - OBJ={L_val.item():.4f}, "
+                    f"grad_E={step:.4f} " 
+                    f"(alpha_mu={alpha_mu:.16f})")
                     
         mu_g = self.model_decoder(mu_z)
         
@@ -243,40 +258,43 @@ class riemannian_data:
         G_old = self.model_decoder(Z)
         g0 = G_old[0].detach()
         gT = G_old[-1].detach()
-        L_old = self.arc_length(G_old, g0, gT)
         
         G = self.model_decoder(Z_dummy)
         E = self.energy_fun(G, g0, gT)
         E_fun.append(E.item())
+        L_old = self.arc_length(G, g0, gT)
+        dE_dZ =(grad(outputs = E, inputs = Z_new)[0])
         
-        while (grad_E>self.eps and count<=self.MAX_ITER):
-    
-            dE_dZ =(grad(outputs = E, inputs = Z_new)[0])
+        while (grad_E>self.eps and count<self.MAX_ITER):
+                
             Z_dummy = Z_new-alpha*dE_dZ
-            grad_E = torch.linalg.norm(dE_dZ, 'fro')**2
+            grad_E = (torch.linalg.norm(dE_dZ, 'fro')**2).item()
             
-            loss.append(grad_E.item())
-            
+            loss.append(grad_E)
             
             G = self.model_decoder(Z_dummy)
-            E = self.energy_fun(G, g0, gT)
-            if (E.item()-E_fun[-1]>0):
-                G = self.model_decoder(Z_new)
-                E = self.energy_fun(G, g0, gT)
+            E_dummy = self.energy_fun(G, g0, gT)
+            if (E_dummy.item()-E.item()>0):
                 alpha /= self.div_fac
             else:
+                E = E_dummy
                 E_fun.append(E.item())
                 Z_new = Z_dummy
+                dE_dZ =(grad(outputs = E, inputs = Z_new)[0])
             
             if print_conv:
-                print(f"Iteration {count}/{self.MAX_ITER} - E_fun={E_fun[-1]:.4f}, "
-                      f"grad_E={loss[-1]:.4f} " 
-                      f"(alpha={alpha:.16f})")
+                print(f"Iteration {count}/{self.MAX_ITER} - E_fun={E.item():.4f}, "
+                    f"grad_E={grad_E:.4f} " 
+                    f"(alpha={alpha:.16f})")
                 
             count += 1  
-        
+
         G_new = self.model_decoder(Z_new)
         L_new = self.arc_length(G_new, g0, gT)
+        
+        Z_plot = Z
+        Z_plot[1:self.T] = Z_new
+        G_plot = self.model_decoder(Z_plot)
         
         if print_conv:
             if grad_E<self.eps:
@@ -284,7 +302,7 @@ class riemannian_data:
             else:
                 print("The algorithm stopped due to maximum number of iterations!")
         
-        return loss, E_fun, Z_new, G_old, G_new, L_old, L_new
+        return loss, E_fun, Z_new, G_old, G_new, L_old, L_new, G_plot
     
     def parallel_translation_al2(self, Z, v0):
         

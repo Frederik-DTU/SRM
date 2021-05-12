@@ -18,7 +18,7 @@ module swap cudnn/v7.0-prod-cuda8
 
 python3 train_circle.py \
     --data_path Data/circle.csv \
-    --save_model_path trained_models/circle/circle \
+    --save_model_path trained_models/main/circle \
     --save_step 5000 \
     --device cuda \
     --epochs 100000 \
@@ -26,4 +26,4 @@ python3 train_circle.py \
     --workers 4 \
     --lr 0.0001  \
     --con_training 1 \
-    --load_model_path trained_models/circle/circle_epoch_70000.pt
+    --load_model_path trained_models/main/circle_epoch_70000.pt

@@ -16,11 +16,17 @@ https://gist.github.com/sbarratt/37356c46ad1350d4c30aefbd488a4faa
 
 #%% Modules
 
+#Loading own module from parent folder
+import os, sys
+currentdir = os.path.dirname(os.path.realpath(__file__))
+parentdir = os.path.dirname(os.path.realpath(currentdir))
+parentdir = os.path.dirname(os.path.realpath(parentdir))
+sys.path.append(parentdir)
+
+#Modules
 import torch
 import torch.optim as optim
 import pandas as pd
-import numpy as np
-from torch import nn
 
 #Own files
 from plot_dat import plot_3d_fun
@@ -28,26 +34,9 @@ from VAE_surface3d import VAE_3d
 
 #%% Function for plotting
 
-def x3_R2(x1, x2):
-    
-    return x1, x2, 0*x1
-
-def x3_hyper_para(x1, x2):
-    
-    return x1, x2, x1**2-x2**2
-
-def x3_parabolic(x1, x2):
+def paraboloid_fun(x1, x2):
     
     return x1, x2, x1**2+x2**2
-
-def x3_sphere(x1, x2):
-    
-    N = len(x1)
-    x3 = np.random.normal(0, 1, N)
-    
-    r = np.sqrt(x1**2+x2**2+x3**2)
-    
-    return x1/r, x2/r, x3/r
 
 #%% Loading data and model
 
@@ -55,28 +44,15 @@ def x3_sphere(x1, x2):
 epoch_load = '100000'
 lr = 0.0001
 device = 'cpu'
-latent_dim = 2
 
 #Parabolic data
-data_name = 'sphere'
-fun = x3_sphere
-
-#Hyper parabolic data
-#data_name = 'hyper_para'
-#fun = x3_hyper_para
-
-#Surface in R3 (R2) data
-#data_name = 'surface_R2'
-#fun = x3_R2
-
-#Sphere data
-#data_name = 'sphere'
-#fun = x3_sphere
+data_name = 'parabolic'
+fun = paraboloid_fun
 
 #Loading files
 data_path = 'Data/'+data_name+'.csv'
-file_model_save = 'trained_models/'+data_name+'/'+data_name+'_epoch_'+epoch_load+'.pt'
-data_plot = plot_3d_fun(N_grid=100, fun = fun)
+file_model_save = 'trained_models/main/'+data_name+'_epoch_'+epoch_load+'.pt'
+data_plot = plot_3d_fun(N=100)
 
 #Loading data
 df = pd.read_csv(data_path, index_col=0)
@@ -84,14 +60,7 @@ DATA = torch.Tensor(df.values)
 DATA = torch.transpose(DATA, 0, 1)
 
 #Loading model
-model = model = VAE_3d(fc_h = [3, 100],
-                 fc_g = [latent_dim, 100, 3],
-                 fc_mu = [100, latent_dim],
-                 fc_var = [100, latent_dim],
-                 fc_h_act = [nn.ELU],
-                 fc_g_act = [nn.ELU, nn.Identity],
-                 fc_mu_act = [nn.Identity],
-                 fc_var_act = [nn.Sigmoid]).to(device) #Model used
+model = model = VAE_3d().to(device) #Model used
 optimizer = optim.Adam(model.parameters(), lr=lr)
 
 checkpoint = torch.load(file_model_save, map_location=device)
@@ -110,8 +79,8 @@ model.eval()
 x1 = DATA[:,0].detach().numpy()
 x2 = DATA[:,1].detach().numpy()
 x3 = DATA[:,2].detach().numpy()
-data_plot.true_plot_3d([min(x1), max(x1)], [min(x2), max(x2)]) #Plotting the true surface
-data_plot.plot_data_scatter_3d(x1, x2, x3) #Plotting the true surface with the simulated data
+data_plot.true_Surface3d(fun, [min(x1), max(x1)], [min(x2), max(x2)]) #Plotting the true surface
+data_plot.plot_data_scatter_3d(fun, x1, x2, x3) #Plotting the true surface with the simulated data
 data_plot.plot_data_surface_3d(x1, x2, x3) #Surface plot of the data
 
 #%% Plotting learned data
@@ -134,7 +103,7 @@ data_plot.plot_loss(kld_loss, title='KLD')
 data_plot.plot_data_surface_3d(x1, x2, x3)
 
 #Plotting the true surface with the reconstructed data
-data_plot.plot_data_scatter_3d(x1, x2, x3, title='Scatter of Reconstructed Data')
+data_plot.plot_data_scatter_3d(fun, x1, x2, x3, title='Scatter of Reconstructed Data')
 
 #Plotting mu in Z-space
 z = z.detach().numpy()
@@ -143,6 +112,50 @@ std = std.detach().numpy()
 data_plot.plot_dat_in_Z_2d([z, 'z'])
 data_plot.plot_dat_in_Z_2d([mu, 'mu'])
 data_plot.plot_dat_in_Z_2d([std, 'std'])
-    
-    
+
+#%% Plotting the Riemannian simple geodesics
+
+load_path = 'rm_computations/simple_geodesic/simple_geodesic.pt'
+
+checkpoint = torch.load(load_path, map_location=device)
+gx = checkpoint['gx']
+gy = checkpoint['gy']
+points = torch.transpose(torch.cat((gx.view(-1,1), gy.view(-1,1)), dim = 1), 0, 1)
+
+Z_old = checkpoint['Z_old'].detach().numpy()
+Z_new = checkpoint['Z_new'].detach().numpy()
+G_old = checkpoint['G_old'].detach().numpy()
+G_new = checkpoint['G_new'].detach().numpy()
+L_old = checkpoint['L_old']
+L_new = checkpoint['L_new']
+
+data_plot.plot_geodesic_in_X_3d(fun, #points.detach().numpy(),
+                          [-4,4],[-4,4],
+                          [G_old, 'Interpolation (L=%.4f)'%L_old], 
+                          [G_new, 'Approximated Geodesic (L=%.4f)'%L_new])
+
+data_plot.plot_geodesic_in_Z_2d([Z_old, 'Interpolation (L=%.4f)'%L_old], 
+                          [Z_new, 'Approximated Geodesic (L=%.4f)'%L_new])
+
+#%% Plotting Frechet mean
+
+load = 'rm_computations/frechet_mean/frechet_mean.pt'
+checkpoint = torch.load(load, map_location=device)
+L = checkpoint['L']
+muz_init = checkpoint['muz_init'].view(-1)
+mug_init = checkpoint['mug_init'].view(-1)
+mu_z = checkpoint['mu_z'].view(-1)
+mu_g = checkpoint['mu_g'].view(-1)
+batch_size = checkpoint['batch_size']
+
+data_batch = DATA[0:batch_size].detach().numpy()
+Z = model.h(DATA[0:batch_size])[0]
+
+data_plot.plot_means_with_true_surface3d(fun, data_batch, [-2,2], [-2,2],
+                              [-2,2],[-2,2],[0,8],
+                              [mug_init.detach().numpy(), 'Linear mean'], 
+                              [mu_g.detach().numpy(), 'Approximated Frechét mean'])
+
+data_plot.plot_mean_in_Z2d(Z.detach().numpy(), [muz_init.detach().numpy(), 'Linear mean'], 
+                           [mu_z.detach().numpy(), 'Approximated Frechét mean'])
     

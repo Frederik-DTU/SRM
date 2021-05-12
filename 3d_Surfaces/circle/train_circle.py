@@ -18,6 +18,14 @@ https://pytorch.org/tutorials/recipes/recipes/tuning_guide.html
 
 #%% Modules
 
+#Loading own module from parent folder
+import os, sys
+currentdir = os.path.dirname(os.path.realpath(__file__))
+parentdir = os.path.dirname(os.path.realpath(currentdir))
+parentdir = os.path.dirname(os.path.realpath(parentdir))
+sys.path.append(parentdir)
+
+#Modules
 import torch
 import torch.optim as optim
 from torch import nn
@@ -35,7 +43,7 @@ def parse_args():
     # File-paths
     parser.add_argument('--data_path', default='Data/circle.csv', # 'Data/surface_R2.csv'
                         type=str)
-    parser.add_argument('--save_model_path', default='trained_models/circle/circle', #'trained_models/surface_R2'
+    parser.add_argument('--save_model_path', default='trained_models/main/circle', #'trained_models/surface_R2'
                         type=str)
     parser.add_argument('--save_step', default=100,
                         type=int)
@@ -55,7 +63,7 @@ def parse_args():
     #Continue training or not
     parser.add_argument('--con_training', default=0,
                         type=int)
-    parser.add_argument('--load_model_path', default='trained_models/circle_epoch_5000.pt',
+    parser.add_argument('--load_model_path', default='trained_models/main/circle_epoch_5000.pt',
                         type=str)
 
 

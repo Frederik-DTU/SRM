@@ -15,10 +15,10 @@ def x3_fun(x1, x2):
 
 class plot_3d_fun(object):
     def __init__(self,
-                 N_grid = 100,
+                 N = 100,
                  fig_size = (8,6)):
         
-        self.N_grid = N_grid
+        self.N = N
         self.fig_size = fig_size
         
     def convert_list_to_np(self, Z):
@@ -44,6 +44,79 @@ class plot_3d_fun(object):
             Z_tensor[i] = Z[i]
         
         return Z_tensor
+    
+    def plot_means_with_true_shape3d(self, fun, points, *args):
+        
+        plt.figure(figsize=self.fig_size)
+        ax = plt.axes(projection="3d")
+        
+        x1, x2, x3 = fun(N = self.N)
+        ax.plot(x1, x2, x3)
+        
+        x = points[:,0]
+        y = points[:,1]
+        z = points[:,2]
+        ax.scatter3D(x, y, z, color='black')
+        
+        for arg in args:
+            lab = arg[1]
+            x = arg[0][0]
+            y = arg[0][1]
+            z = arg[0][2]
+            ax.scatter3D(x, y, z, label=lab, s = 100)
+
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+        ax.set_zlabel('z')
+        plt.legend()
+                
+        plt.tight_layout()
+        
+        plt.show()
+        
+        return
+    
+    def plot_means_with_true_surface3d(self, fun, points, x1_grid, x2_grid,
+                                       xscale=[0,2], yscale=[0,2], zscale=[0,2],
+                                       *args):
+        
+        plt.figure(figsize=self.fig_size)
+        ax = plt.axes(projection="3d")
+        
+        x1_grid = np.linspace(x1_grid[0], x1_grid[1], num = self.N)
+        x2_grid = np.linspace(x2_grid[0], x2_grid[1], num = self.N)
+        
+        X1, X2 = np.meshgrid(x1_grid, x2_grid)
+        X1, X2, X3 = fun(X1, X2)
+        ax.plot_surface(
+        X1, X2, X3,  rstride=1, cstride=1, color='c', alpha=0.2, linewidth=0)
+        
+        x = points[:,0]
+        y = points[:,1]
+        z = points[:,2]
+        ax.scatter3D(x, y, z, color='black')
+        
+        for arg in args:
+            lab = arg[1]
+            x = arg[0][0]
+            y = arg[0][1]
+            z = arg[0][2]
+            ax.scatter3D(x, y, z, label=lab, s=100)
+
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+        ax.set_zlabel('z')
+        plt.legend()
+        
+        ax.set_xlim(xscale[0], xscale[1])
+        ax.set_ylim(yscale[0], yscale[1])
+        ax.set_zlim(zscale[0], zscale[1])
+                
+        plt.tight_layout()
+        
+        plt.show()
+        
+        return
     
     def plot_geodesic_in_Z_2d(self, *args):
         
@@ -88,17 +161,41 @@ class plot_3d_fun(object):
 
         
         plt.show()
-    
-    def plot_geodesic_in_X_3d(self, x1_grid, x2_grid, *args):
         
-        fig = plt.figure(figsize=self.fig_size)
+    def plot_mean_in_Z2d(self, points, *args):
+        
+        plt.figure(figsize=self.fig_size)
+        
+        plt.scatter(points[:,0], points[:,1])
+        
+        for arg in args:
+            lab = arg[1]
+            x = arg[0][0]
+            y = arg[0][1]
+            plt.scatter(x, y, label=lab, s = 100)
+            
+        plt.xlabel('x1')
+        plt.ylabel('x2')
+        plt.grid()
+        plt.legend()
+        plt.title('Z-space')
+        
+        plt.tight_layout()
+
+        plt.show()
+        
+        return
+    
+    def plot_geodesic_in_X_3d(self, fun, x1_grid, x2_grid, *args):
+        
+        plt.figure(figsize=self.fig_size)
         ax = plt.axes(projection="3d")
         
-        x1_grid = np.linspace(x1_grid[0], x1_grid[1], num = self.N_grid)
-        x2_grid = np.linspace(x2_grid[0], x2_grid[1], num = self.N_grid)
+        x1_grid = np.linspace(x1_grid[0], x1_grid[1], num = self.N)
+        x2_grid = np.linspace(x2_grid[0], x2_grid[1], num = self.N)
         
         X1, X2 = np.meshgrid(x1_grid, x2_grid)
-        X1, X2, X3 = self.fun(X1, X2)
+        X1, X2, X3 = fun(X1, X2)
         ax.plot_surface(
         X1, X2, X3,  rstride=1, cstride=1, color='c', alpha=0.2, linewidth=0)
         
@@ -113,23 +210,57 @@ class plot_3d_fun(object):
         ax.set_ylabel('y')
         ax.set_zlabel('z')
         ax.legend()
-        
+                
         plt.tight_layout()
 
         plt.show()
         
         return
-        
-    def true_Surface3d(self, x1_grid, x2_grid):
+    
+    def plot_geodesic3d(self, fun, points, xscale = [-1,1], yscale=[-1,1], 
+                                zscale=[-1,1], *args):
         
         plt.figure(figsize=self.fig_size)
         ax = plt.axes(projection="3d")
         
-        x1_grid = np.linspace(x1_grid[0], x1_grid[1], num = self.N_grid)
-        x2_grid = np.linspace(x2_grid[0], x2_grid[1], num = self.N_grid)
+        x1, x2, x3 = fun(N = self.N)
+        ax.plot(x1, x2, x3)
+        
+        x = points[:,0]
+        y = points[:,1]
+        z = points[:,2]
+        ax.scatter3D(x, y, z, color='black')
+        
+        for arg in args:
+            lab = arg[1]
+            x = arg[0][:,0]
+            y = arg[0][:,1]
+            z = arg[0][:,2]
+            ax.plot(x, y, z, label=lab)
+
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+        ax.set_zlabel('z')
+        plt.legend()
+        
+        ax.set_xlim(xscale[0], xscale[1])
+        ax.set_ylim(yscale[0], yscale[1])
+        ax.set_zlim(zscale[0], zscale[1])
+                
+        plt.tight_layout()
+        
+        plt.show()
+        
+    def true_Surface3d(self, fun, x1_grid, x2_grid):
+        
+        plt.figure(figsize=self.fig_size)
+        ax = plt.axes(projection="3d")
+        
+        x1_grid = np.linspace(x1_grid[0], x1_grid[1], num = self.N)
+        x2_grid = np.linspace(x2_grid[0], x2_grid[1], num = self.N)
         
         X1, X2 = np.meshgrid(x1_grid, x2_grid)
-        X1, X2, X3 = self.fun(X1, X2)
+        X1, X2, X3 = fun(X1, X2)
         ax.plot_surface(
         X1, X2, X3,  rstride=1, cstride=1, color='c', alpha=1.0, linewidth=0)
 
@@ -141,52 +272,71 @@ class plot_3d_fun(object):
         
         plt.show()
         
-    def true_Surface3d(self, x1_grid, x2_grid):
+    def true_path3d_with_points(self, fun, points, xscale = [-1,1], yscale=[-1,1], 
+                                zscale=[-1,1]):
         
         plt.figure(figsize=self.fig_size)
         ax = plt.axes(projection="3d")
         
-        x1_grid = np.linspace(x1_grid[0], x1_grid[1], num = self.N_grid)
-        x2_grid = np.linspace(x2_grid[0], x2_grid[1], num = self.N_grid)
+        x1, x2, x3 = fun(N = self.N)
+        ax.plot(x1, x2, x3)
         
-        X1, X2 = np.meshgrid(x1_grid, x2_grid)
-        X1, X2, X3 = self.fun(X1, X2)
-        ax.plot_surface(
-        X1, X2, X3,  rstride=1, cstride=1, color='c', alpha=1.0, linewidth=0)
+        x = points[:,0]
+        y = points[:,1]
+        z = points[:,2]
+        ax.scatter3D(x, y, z, color='black', s = 10)
 
         ax.set_xlabel('x')
         ax.set_ylabel('y')
         ax.set_zlabel('z')
+        
+        ax.set_xlim(xscale[0], xscale[1])
+        ax.set_ylim(yscale[0], yscale[1])
+        ax.set_zlim(zscale[0], zscale[1])
                 
         plt.tight_layout()
         
         plt.show()
+        
+    def plot_1d_hist(self, z, lab):
+        
+        plt.figure(figsize=self.fig_size)
+        n, bins, patches = plt.hist(x=z, bins='auto', color='#0504aa',
+                            alpha=0.7, rwidth=0.85)
+        plt.grid(axis='y', alpha=0.75)
+        plt.xlabel('Value')
+        plt.ylabel('Frequency')
+        plt.title(lab)
+        maxfreq = n.max()
+        # Set a clean upper y-axis limit.
+        plt.ylim(ymax=np.ceil(maxfreq / 10) * 10 if maxfreq % 10 else maxfreq + 10)
         
     def plot_data_surface_3d(self, x1, x2, x3, title="Surface of Data"):
         
-        fig = plt.figure(figsize=self.fig_size)
+        plt.figure(figsize=self.fig_size)
         ax = plt.axes(projection="3d")
         
         ax.plot_trisurf(x1, x2, x3,
-                cmap='viridis', edgecolor='none');
-        ax.set_title(title);
+                cmap='viridis', edgecolor='none')
+        ax.set_title(title)
         ax.set_xlabel('x')
         ax.set_ylabel('y')
         ax.set_zlabel('z')
+        
         plt.tight_layout()
         
         plt.show()
         
-    def plot_data_scatter_3d(self, x1, x2, x3, title="Scatter of Data"):
+    def plot_data_scatter_3d(self, fun, x1, x2, x3, title="Scatter of Data"):
         
-        fig = plt.figure(figsize=self.fig_size)
+        plt.figure(figsize=self.fig_size)
         ax = plt.axes(projection="3d")
         
-        x1_grid = np.linspace(min(x1), max(x1), num = self.N_grid)
-        x2_grid = np.linspace(min(x2), max(x2), num = self.N_grid)
+        x1_grid = np.linspace(min(x1), max(x1), num = self.N)
+        x2_grid = np.linspace(min(x2), max(x2), num = self.N)
         
         X1, X2 = np.meshgrid(x1_grid, x2_grid)
-        X1, X2, X3 = self.fun(X1, X2)
+        X1, X2, X3 = fun(X1, X2)
         ax.plot_surface(
         X1, X2, X3,  rstride=1, cstride=1, color='c', alpha=0.2, linewidth=0)
 
@@ -195,15 +345,15 @@ class plot_3d_fun(object):
         ax.set_zlabel('z')
         ax.set_title(title)
                 
-        p = ax.scatter3D(x1, x2, x3, color='black')
-        
+        ax.scatter3D(x1, x2, x3, color='black')
+                
         plt.tight_layout()
         
         plt.show()
         
     def plot_loss(self, loss, title='Loss function'):
         
-        fig = plt.figure(figsize=self.fig_size)
+        plt.figure(figsize=self.fig_size)
         
         plt.plot(loss)
             

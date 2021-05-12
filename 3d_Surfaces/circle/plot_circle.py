@@ -39,14 +39,12 @@ from VAE_surface3d import VAE_3d
 
 def circle_fun(N = 1000, mu = np.array([1.,1.,1.]), r=1):
     
-    theta = np.random.uniform(0, 2*np.pi, N)
+    theta = np.linspace(0, 2*np.pi, N)
     x1 = r*np.cos(theta)+mu[0]
     x2 = r*np.sin(theta)+mu[1]
     x3 = np.zeros(N)+mu[2]
     
-    df = np.vstack((x1, x2, x3))    
-    
-    return df
+    return x1, x2, x3
 
 #%% Loading data and model
 
@@ -62,8 +60,8 @@ fun = circle_fun
 
 #Loading files
 data_path = 'Data/'+data_name+'.csv'
-file_model_save = 'trained_models/main/'+data_name+'/'+data_name+'_epoch_'+epoch_load+'.pt'
-data_plot = plot_3d_fun(N_grid=100, fun = fun)
+file_model_save = 'trained_models/main/'+data_name+'_epoch_'+epoch_load+'.pt'
+data_plot = plot_3d_fun(N=100)
 
 #Loading data
 df = pd.read_csv(data_path, index_col=0)
@@ -94,42 +92,76 @@ model.eval()
 #%% Plotting true data
 
 #Plotting the raw data
-x1 = DATA[:,0].detach().numpy()
-x2 = DATA[:,1].detach().numpy()
-x3 = DATA[:,2].detach().numpy()
-data_plot.true_plot_3d([min(x1), max(x1)], [min(x2), max(x2)]) #Plotting the true surface
-data_plot.plot_data_scatter_3d(x1, x2, x3) #Plotting the true surface with the simulated data
-data_plot.plot_data_surface_3d(x1, x2, x3) #Surface plot of the data
+X = DATA.detach().numpy()
+data_plot.true_path3d_with_points(fun, X, [0, 2], [0,2], [0,2]) #Plotting the true surface
 
 #%% Plotting learned data
 
 X = model(DATA) #x=z, x_hat, mu, var, kld.mean(), rec_loss.mean(), elbo
 z = X[0]
-x_hat = X[1]
+x_hat = X[1].detach().numpy()
 mu = X[2]
 std = X[3]
-x1 = x_hat[:,0].detach().numpy()
-x2 = x_hat[:,1].detach().numpy()
-x3 = x_hat[:,2].detach().numpy()
 
 #Plotting loss function
 data_plot.plot_loss(elbo, title='Loss function')
 data_plot.plot_loss(rec_loss, title='Reconstruction Loss')
 data_plot.plot_loss(kld_loss, title='KLD')
 
-#Surface plot of the reconstructed data
-data_plot.plot_data_surface_3d(x1, x2, x3)
-
-#Plotting the true surface with the reconstructed data
-data_plot.plot_data_scatter_3d(x1, x2, x3, title='Scatter of Reconstructed Data')
-
+data_plot.true_path3d_with_points(fun, x_hat, [0, 2], [0,2], [0,2]) #Plotting the true surface
 #Plotting mu in Z-space
+
 z = z.detach().numpy()
 mu = mu.detach().numpy()
 std = std.detach().numpy()
-data_plot.plot_dat_in_Z_2d([z, 'z'])
-data_plot.plot_dat_in_Z_2d([mu, 'mu'])
-data_plot.plot_dat_in_Z_2d([std, 'std'])
+
+data_plot.plot_1d_hist(z, 'Latent Dimension')
+data_plot.plot_1d_hist(mu, 'Mean Value')
+data_plot.plot_1d_hist(std, 'Standard Deviation')
+
+#%% Plotting the Riemannian simple geodesics
+
+load_path = 'rm_computations/simple_geodesic/'
+names = ['pi_2', 'pi', '5pi_4']
+
+for i in range(len(names)):
     
+    load = load_path+names[i]+'.pt'
+    checkpoint = torch.load(load, map_location=device)
+    gx = checkpoint['gx']
+    gy = checkpoint['gy']
+    points = torch.transpose(torch.cat((gx.view(-1,1), gy.view(-1,1)), dim = 1), 0, 1)
     
+    G_old = checkpoint['G_old'].detach().numpy()
+    G_new = checkpoint['G_new'].detach().numpy()
+    L_old = checkpoint['L_old'].detach().numpy()
+    L_new = checkpoint['L_new'].detach().numpy()
+    
+    data_plot.plot_geodesic3d(circle_fun, points.detach().numpy(),
+                              [0,2],[0,2],[0,2],
+                              [G_old, 'Interpolation (L=%.4f)'%L_old], 
+                              [G_new, 'Approximated Geodesic (L=%.4f)'%L_new])
+
+#%% Plotting Frechet mean
+
+load = 'rm_computations/frechet_mean/frechet_mean.pt'
+checkpoint = torch.load(load, map_location=device)
+L = checkpoint['L']
+muz_init = checkpoint['muz_init'].view(-1)
+mug_init = checkpoint['mug_init'].view(-1)
+mu_z = checkpoint['mu_z'].view(-1)
+mu_g = checkpoint['mu_g'].view(-1)
+batch_size = checkpoint['batch_size']
+
+data_batch = DATA[0:batch_size].detach().numpy()
+
+data_plot.plot_means_with_true_shape3d(circle_fun, data_batch,
+                              [mug_init.detach().numpy(), 'Linear mean'], 
+                              [mu_g.detach().numpy(), 'Approximated Frechét mean'])
+
+
+
+
+
+
     
