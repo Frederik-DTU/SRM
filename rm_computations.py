@@ -560,52 +560,74 @@ class rm_data:
                 
         return loss, mu
     
-    def parallel_translation_al2(self, Z, v0, n_encoder, n_decoder):
+    def parallel_translation_al2(self, Z, v0):
         
         T = Z.shape[0]-1
                 
         #jacobi_g = self.get_jacobian(self.model_decoder, Z[0], n_decoder)
-        z0 = Z[0].clone().detach().requires_grad_(True).view(-1)
+        z0 = Z[0].clone().detach().requires_grad_(True)
         y = self.model_decoder(z0.view(1,-1)).view(-1)
-        print(y.shape)
-        print(y.reshape(-1).shape)
-        test = self.jacobian(y, z0)
-        print(test.shape)
-        return 0
-        u0 = torch.mv(jacobi_g, v0)
+        jacobi_g = self.jacobian_mat(y, z0)
+        u0 = torch.mv(jacobi_g, v0.view(-1))
         
+        u_prev = u0
         for i in range(0,T):
+            print(f"Iteration {i+1}/{T}")
             #xi = g[i] #is done in g for all
-            jacobi_g = self.get_jacobian(self.model_decoder, Z[i+1], n_decoder)
+            zi = Z[i+1].clone().detach().requires_grad_(True)
+            gi = self.model_decoder(zi.view(1,-1)).view(-1)
+            jacobi_g = self.jacobian_mat(gi, zi)
             U,S,V = torch.svd(jacobi_g)
-            ui = torch.mv(torch.matmul(U, torch.transpose(U, 0, 1)),u0)
-            ui = torch.norm(u0)/torch.norm(ui)*ui
+            ui = torch.mv(torch.matmul(U, torch.transpose(U, 0, 1)),u_prev)
+            ui = torch.norm(u_prev)/torch.norm(ui)*ui
+            u_prev = ui
         
-        xT = self.model_decoder(Z[-1])
-        jacobi_h = self.get_jacobian(self.model_encoder, xT, n_encoder)    
+        xT = self.model_decoder(Z[-1].view(1,-1)).detach().requires_grad_(True)
+        zT = self.model_encoder(xT).view(-1)
+        jacobi_h = self.jacobian_mat(zT, xT)
+        jacobi_h = jacobi_h.view(len(zT.view(-1)), len(xT.view(-1)))
         vT = torch.mv(jacobi_h, ui)
+        uT = ui
     
-        return vT
+        return vT, uT
     
-    def geodesic_shooting_al3(self, z0, u0, T=100):
+    def geodesic_shooting_al3(self, z0, u0, T=10):
         
         delta = 1/T
-        jacobi_dim = len(u0)
         x0 = self.model_decoder(z0)
-    
-        zi = z0.view(1,-1)
-        xi = x0.view(1,-1)
-        for i in range(0, T):
-            xi = (xi+delta*u0).view(1,-1)
-            zi = self.model_encoder(xi)
-            xi = self.model_decoder(zi)
-            jacobi_g = self.get_jacobian(self.model_decoder, zi, jacobi_dim)
-            U,S,V = torch.svd(jacobi_g)
-            ui = torch.mv(torch.matmul(U, torch.transpose(U, 0, 1)),u0)
-            ui = torch.norm(u0)/torch.norm(ui)*ui
-            u0 = ui
+        shape = x0.shape
+        zdim = [T+1]
+        zdim = zdim + list((z0.squeeze()).shape)
+        gdim = [T+1]
+        gdim = gdim + list((x0.squeeze()).shape)
+        
+        Z = torch.empty(zdim)
+        G = torch.empty(gdim)
+        gdim = x0.squeeze().shape
             
-        return zi   
+        zi = z0
+        xi = x0.view(-1)
+        u_prev = u0.view(-1)
+        for i in range(0, T):
+            print(f"Iteration {i+1}/{T}")
+            xi = (xi+delta*u_prev).view(shape)
+            zi = self.model_encoder(xi).view(-1)
+            xi = self.model_decoder(zi.view(1,-1)).view(-1)
+            jacobi_g = self.jacobian_mat(xi, zi)
+            U,S,V = torch.svd(jacobi_g)
+            ui = torch.mv(torch.matmul(U, torch.transpose(U, 0, 1)),u_prev.view(-1))
+            ui = torch.norm(u_prev)/torch.norm(ui)*ui
+            u_prev = ui
+            Z[i] = zi
+            G[i] = xi.view(gdim)
+        
+        xT = (xi+delta*u_prev).view(shape)
+        zT = self.model_encoder(xT)
+        xT = self.model_decoder(zT.view(1,-1))
+        Z[-1] = zT.squeeze()
+        G[-1] = xT.squeeze()
+        
+        return Z, G
     
     def get_jacobian(self, net_fun, x, n_out):
         x = x.squeeze()
@@ -617,12 +639,11 @@ class rm_data:
         y.backward(torch.eye(n_out), retain_graph=True)
         return x.grad.data
     
-    def jacobian(self, y, x, create_graph=False):
+    def jacobian_mat(self, y, x, create_graph=False):
         jac = []
         flat_y = y.reshape(-1)
         grad_y = torch.zeros_like(flat_y)
         for i in range(len(flat_y)):
-            print(i)
             grad_y[i] = 1.0
             grad_x, = torch.autograd.grad(flat_y, x, grad_y, retain_graph=True,
                                           create_graph=create_graph)
