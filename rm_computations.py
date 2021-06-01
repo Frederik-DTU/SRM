@@ -280,6 +280,22 @@ class rm_geometry:
         
         return L
     
+    def geodesic_distance_matrix(self, Z, n_grid, y_init_grid, fun):
+        
+        N = Z.shape[0]
+        dmat = np.zeros((N, N))
+        
+        for i in range(0, N):
+            for j in range(i+1,N):
+                z_geodesic = self.bvp_geodesic(Z[i], Z[j], n_grid, y_init_grid)
+                g_geodesic = fun(z_geodesic)
+                L = self.arc_length(g_geodesic)
+                
+                dmat[i][j] = L
+                dmat[j][i] = L
+                
+        return dmat
+    
     def __parallel_transport_geodesic_equation_fun(self, t, y):
         
 
@@ -422,7 +438,7 @@ class rm_data:
         
         return v_z, v_g
     
-    def geodesic_distance_matrix(self, Z, epochs = 10000, lr = 1e-4, T=100):
+    def geodesic_distance_matrix(self, Z, epochs = 100000, lr = 1e-4, T=100):
         
         N = Z.shape[0]
         dmat = torch.zeros(N, N)

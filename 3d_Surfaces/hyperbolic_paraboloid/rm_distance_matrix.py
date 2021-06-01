@@ -35,12 +35,6 @@ pi = math.pi
 from rm_computations import rm_data
 from VAE_surface3d import VAE_3d
 
-#%% Fun
-
-def x3_hyper_para(x1, x2):
-    
-    return x1, x2, x1**2-x2**2
-
 #%% Parser for command line arguments
 
 def parse_args():
@@ -48,31 +42,25 @@ def parse_args():
     # File-paths
     parser.add_argument('--data_path', default='Data/hyper_para.csv', 
                         type=str)
-    parser.add_argument('--save_path', default='rm_computations/dmat/', 
-                        type=str)
-    parser.add_argument('--names', default='dmat',
+    parser.add_argument('--save_path', default='rm_computations/dmat/dmat.pt', 
                         type=str)
 
     #Hyper-parameters
     parser.add_argument('--device', default='cpu', #'cuda:0'
                         type=str)
-    parser.add_argument('--MAX_ITER', default=100,
-                        type=int)
-    parser.add_argument('--eps', default=0.1,
+    parser.add_argument('--epochs', default=100000,
                         type=int)
     parser.add_argument('--T', default=100,
                         type=int)
-    parser.add_argument('--alpha', default=1,
-                        type=float)
-    parser.add_argument('--batch_size', default=10,
+    parser.add_argument('--batch_size', default=100,
                         type=int)
     parser.add_argument('--lr', default=0.0001,
                         type=float)
 
     #Continue training or not
-    parser.add_argument('--load_model_path', default='trained_models/main/hyper_para_epoch_100000.pt',
+    parser.add_argument('--load_model_path', default='trained_models/main/'\
+                        'hyper_para_epoch_100000.pt',
                         type=str)
-
 
     args = parser.parse_args()
     return args
@@ -104,14 +92,11 @@ def main():
     
     Z = model.h(DATA)
     Z = Z[0:args.batch_size]
+        
+    dmat = rm.geodesic_distance_matrix(Z, epochs=args.epochs, T=args.T)
     
-    muz_linear, mug_linear = rm.compute_euclidean_mean(Z)
-    
-    dmat = rm.geodesic_distance_matrix(Z, epochs=100000, T=100)
-    
-    checkpoint = args.save_path+args.names+'.pt'
     torch.save({'dmat': dmat}, 
-                checkpoint)
+                args.save_path)
 
     return
 

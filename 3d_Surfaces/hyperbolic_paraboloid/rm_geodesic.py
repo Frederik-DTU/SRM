@@ -41,6 +41,8 @@ def x3_hyper_para(x1, x2):
     
     return x1, x2, x1**2-x2**2
 
+fun = x3_hyper_para
+
 #%% Parser for command line arguments
 
 def parse_args():
@@ -48,27 +50,23 @@ def parse_args():
     # File-paths
     parser.add_argument('--data_path', default='Data/hyper_para.csv', 
                         type=str)
-    parser.add_argument('--save_path', default='rm_computations/simple_geodesic/', 
-                        type=str)
-    parser.add_argument('--name', default='simple_geodesic',
+    parser.add_argument('--save_path', default='rm_computations/simple_geodesic/'\
+                                                'simple_geodesic.pt', 
                         type=str)
 
     #Hyper-parameters
     parser.add_argument('--device', default='cpu', #'cuda:0'
                         type=str)
-    parser.add_argument('--MAX_ITER', default=100000,
-                        type=int)
-    parser.add_argument('--eps', default=0.1,
+    parser.add_argument('--epochs', default=100000,
                         type=int)
     parser.add_argument('--T', default=100,
                         type=int)
-    parser.add_argument('--alpha', default=1,
-                        type=float)
     parser.add_argument('--lr', default=0.0001,
                         type=float)
 
     #Continue training or not
-    parser.add_argument('--load_model_path', default='trained_models/main/hyper_para_epoch_100000.pt',
+    parser.add_argument('--load_model_path', default='trained_models/main/'\
+                        'hyper_para_epoch_100000.pt',
                         type=str)
 
 
@@ -102,8 +100,8 @@ def main():
     zy = (torch.tensor([3,-3])).float()
     
     #Coordinates on the manifold
-    x = (torch.tensor(x3_hyper_para(zx[0],zx[1]))).float()
-    y = (torch.tensor(x3_hyper_para(zy[0],zy[1]))).float()
+    x = (torch.tensor(fun(zx[0],zx[1]))).float()
+    y = (torch.tensor(fun(zy[0],zy[1]))).float()
     
     #Mean of approximate posterier
     hx = model.h(x)
@@ -117,13 +115,12 @@ def main():
     rm = rm_data(model.h, model.g, args.device)
     
     z_linear = rm.interpolate(hx, hy, args.T)
-    loss, z_geodesic = rm.compute_geodesic(z_linear, 100000)
+    loss, z_geodesic = rm.compute_geodesic(z_linear, args.epochs)
     g_linear = model.g(z_linear)
     g_geodesic = model.g(z_geodesic)
     L_linear = rm.arc_length(g_linear)
     L_geodesic = rm.arc_length(g_geodesic)
     
-    checkpoint = args.save_path+args.name+'.pt'
     torch.save({'loss': loss,
                 'z_linear': z_linear,
                 'z_geodesic': z_geodesic,
@@ -135,7 +132,7 @@ def main():
                 'gy': gy,
                 'hx': hx,
                 'hy': hy}, 
-               checkpoint)
+               args.save_path)
 
     return
 
