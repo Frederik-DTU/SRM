@@ -131,7 +131,33 @@ def main():
     _, z_geodesic_a_c = rm.compute_geodesic(z_linear_a_c)
     
     #https://gist.github.com/apaszke/226abdf867c4e9d6698bd198f3b45fb7
-    vT_a_c = rm.parallel_translation_al2(z_geodesic_a_c, v_z, 32, 12288)
+    vT_a_c, uT_a_c = rm.parallel_translation_al2(z_geodesic_a_c, v_z)
+    
+    Z_a_c, G_a_c = rm.geodesic_shooting_al3(z_blond_closed_c, uT_a_c, T = 10)
+    
+    
+    plot_img = G_a_c[-1].view(3,64,64).detach()
+    plt.figure(figsize=(8,6))
+    plt.axis("off")
+    plt.title("Linear mean")
+    plt.imshow(plot_img.permute(1, 2, 0))
+    
+    
+    plot_img2 = blond_closed.view(3,64,64).detach()
+    plot_img3 = blond_closed_b.view(3,64,64).detach()
+    plot_img4 = blond_closed_c.view(3,64,64).detach()
+    
+    plt.figure(figsize=(8,6))
+    plt.axis("off")
+    plt.title("Linear mean")
+    plt.imshow(plot_img4.permute(1, 2, 0))
+    
+    plt.figure(figsize=(8,6))
+    plt.axis("off")
+    plt.title("Original Images")
+    plt.imshow(vutils.make_grid(G_a_c.detach(), padding=2, normalize=True, nrow=11).permute(1, 2, 0))
+    
+    
 
     return
 
