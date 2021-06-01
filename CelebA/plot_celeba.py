@@ -149,19 +149,19 @@ plt.imshow(np.transpose(vutils.make_grid(rec.to(device), padding=2, normalize=Tr
 plt.show()
 
 frechet = torch.load(frechet_path)
-mug_init = frechet['mug_init'].view(3,img_size,img_size).detach()
-mu_g = frechet['mu_g'].view(3,img_size,img_size).detach()
+mug_linear = frechet['mug_linear'].view(3,img_size,img_size).detach()
+mug_geodesic = frechet['mug_geodesic'].view(3,img_size,img_size).detach()
 
 plt.figure(figsize=(8,6))
 plt.subplot(1,2,1)
 plt.axis("off")
 plt.title("Linear mean")
-plt.imshow(mug_init.permute(1, 2, 0))
+plt.imshow(mug_linear.permute(1, 2, 0))
 
 # Plot some training images
 plt.subplot(1,2,2)
 plt.axis("off")
 plt.title("Frechet mean")
-plt.imshow(mu_g.permute(1, 2, 0))
+plt.imshow(mug_geodesic.permute(1, 2, 0))
 plt.show()
 

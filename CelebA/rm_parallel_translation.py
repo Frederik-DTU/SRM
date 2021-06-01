@@ -27,8 +27,8 @@ import torch
 import torch.optim as optim
 import torchvision.datasets as dset
 import torchvision.transforms as transforms
-from torch.utils.data import DataLoader
 import argparse
+from torch.utils.data import DataLoader
 
 #Own files
 from rm_computations import rm_data
@@ -39,15 +39,17 @@ from VAE_celeba import VAE_CELEBA
 def parse_args():
     parser = argparse.ArgumentParser()
     # File-paths
-    parser.add_argument('--data_path', default='Data_groups/group_blond_closed/', 
+    parser.add_argument('--data_path', default="../../Data/CelebA/celeba", 
                         type=str)
-    parser.add_argument('--save_path', default='rm_computations/frechet_mean/group_blond_closed.pt', 
+    parser.add_argument('--save_path', default='rm_computations/simple_geodesic/', 
+                        type=str)
+    parser.add_argument('--name', default='simple_geodesic',
                         type=str)
 
     #Hyper-parameters
     parser.add_argument('--device', default='cpu', #'cuda:0'
                         type=str)
-    parser.add_argument('--MAX_ITER', default=10,
+    parser.add_argument('--MAX_ITER', default=100,
                         type=int)
     parser.add_argument('--eps', default=0.1,
                         type=int)
@@ -59,7 +61,7 @@ def parse_args():
                         type=float)
     parser.add_argument('--size', default=64,
                         type=float)
-    
+
     #Continue training or not
     parser.add_argument('--load_model_path', default='trained_models/main/celeba_epoch_6300.pt',
                         type=str)
@@ -75,21 +77,38 @@ def main():
     #Arguments
     args = parse_args()
     
-    #Load
-    dataset = dset.ImageFolder(root=args.data_path,
-                           transform=transforms.Compose([
-                               transforms.Resize(args.size),
-                               transforms.CenterCrop(args.size),
-                               transforms.ToTensor(),
-                               transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-                           ]))
+    data_path = 'Data_groups/group_blond_closed/'
+    img_size = 64
     
-    trainloader = DataLoader(dataset, batch_size=100,
+    dataset = dset.ImageFolder(root=data_path,
+                               transform=transforms.Compose([
+                                   transforms.Resize(img_size),
+                                   transforms.CenterCrop(img_size),
+                                   transforms.ToTensor(),
+                                   transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+                               ]))
+        
+    trainloader = DataLoader(dataset, batch_size=1,
                          shuffle=False, num_workers=0)
+    blond_closed = next(iter(trainloader))[0]
     
-    DATA = next(iter(trainloader))
+    data_path = 'Data_groups/group_blond_open/'
+    img_size = 64
     
-    #Plotting the trained model
+    dataset = dset.ImageFolder(root=data_path,
+                               transform=transforms.Compose([
+                                   transforms.Resize(img_size),
+                                   transforms.CenterCrop(img_size),
+                                   transforms.ToTensor(),
+                                   transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+                               ]))
+        
+    trainloader = DataLoader(dataset, batch_size=2,
+                         shuffle=False, num_workers=0)
+    blond_closed_b = next(iter(trainloader))[0]
+    blond_closed_c = blond_closed_b[1].view(1,3,64,64)
+    blond_closed_b = blond_closed_b[0].view(1,3,64,64)
+    
     model = VAE_CELEBA().to(args.device) #Model used
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     
@@ -99,23 +118,20 @@ def main():
     
     model.eval()
     
+    z_blond_closed = model.h(blond_closed)
+    z_blond_closed_b = model.h(blond_closed_b)
+    z_blond_closed_c = model.h(blond_closed_c)
+    
     #Loading module
     rm = rm_data(model.h, model.g, args.device)
+    v_z, v_g = rm.Log_map(z_blond_closed, z_blond_closed_b, T = args.T)
+    v_z, v_g = v_z.view(1,-1), v_g.view(1,3,64,64)
     
-    Z = model.h(DATA[0])
+    z_linear_a_c = rm.interpolate(z_blond_closed, z_blond_closed_c, args.T)
+    _, z_geodesic_a_c = rm.compute_geodesic(z_linear_a_c)
     
-    muz_linear, mug_linear = rm.compute_euclidean_mean(Z)
-    loss, muz_geodesic = rm.compute_frechet_mean(Z, muz_linear, T = args.T,
-                                                 epochs_geodesic = 100000,
-                                                 epochs_frechet = 100000)
-    mug_geodesic = model.g(muz_geodesic)
-    
-    torch.save({'loss': loss,
-                 'muz_linear': muz_linear,
-                 'mug_linear': mug_linear,
-                 'muz_geodesic': muz_geodesic,
-                 'mug_geodesic': mug_geodesic}, 
-                args.save_path)
+    #https://gist.github.com/apaszke/226abdf867c4e9d6698bd198f3b45fb7
+    vT_a_c = rm.parallel_translation_al2(z_geodesic_a_c, v_z, 32, 12288)
 
     return
 
@@ -123,6 +139,6 @@ def main():
 
 if __name__ == '__main__':
     main()
-    
+
     
     

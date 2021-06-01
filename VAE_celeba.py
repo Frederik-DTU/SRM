@@ -162,7 +162,7 @@ class VAE_CELEBA(nn.Module):
         
         z = self.rep_par(mu, std)
         
-        return mu, std, z
+        return mu
         
     def g(self, z):
         

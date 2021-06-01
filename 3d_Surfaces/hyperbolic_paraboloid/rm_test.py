@@ -116,26 +116,37 @@ def main():
     #Loading module
     rm = rm_data(model.h, model.g, args.device)
     
-    z_linear = rm.interpolate(hx, hy, args.T)
-    loss, z_geodesic = rm.compute_geodesic(z_linear, 100000)
-    g_linear = model.g(z_linear)
-    g_geodesic = model.g(z_geodesic)
-    L_linear = rm.arc_length(g_linear)
-    L_geodesic = rm.arc_length(g_geodesic)
+    gamma_linear = rm.interpolate(hx, hy, args.T)
+    loss, gamma_geodesic = rm.compute_geodesic(gamma_linear, 1000)
     
+    X = model.h(DATA[0:100])
+    mu_init = X[0]
+    loss, mu = rm.compute_frechet_mean(X, mu_init, epochs_geodesic=10, epochs_frechet = 10, save_step = 1)
+    
+    dmat = rm.geodesic_distance_matrix(X[0:10], epochs=100)
+        
+    v0 = torch.tensor([0.0,1.0])
+    al2 = rm.parallel_translation_al2(gamma_geodesic, v0, 3, 2)
+    
+    u0 = torch.tensor([0.0,1.0, 0.5])
+    al3 = rm.geodesic_shooting_al3(gamma_geodesic[0], u0)
+    
+    """
     checkpoint = args.save_path+args.name+'.pt'
-    torch.save({'loss': loss,
-                'z_linear': z_linear,
-                'z_geodesic': z_geodesic,
-                'g_linear': g_linear,
-                'g_geodesic': g_geodesic,
-                'L_linear': L_linear.item(),
-                'L_geodesic': L_geodesic.item(),
+    torch.save({'loss': gamma_geodesic[0],
+                'E_fun': gamma_geodesic[1],
+                'Z_old': gamma_linear,
+                'Z_new': gamma_geodesic[2],
+                'G_old': gamma_geodesic[3],
+                'G_new': gamma_geodesic[4],
+                'L_old': gamma_geodesic[5].item(),
+                'L_new': gamma_geodesic[6].item(),
                 'gx': gx,
                 'gy': gy,
                 'hx': hx,
                 'hy': hy}, 
                checkpoint)
+    """
 
     return
 

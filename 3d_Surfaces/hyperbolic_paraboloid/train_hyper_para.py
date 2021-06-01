@@ -40,7 +40,7 @@ from VAE_surface3d import VAE_3d
 def parse_args():
     parser = argparse.ArgumentParser()
     # File-paths
-    parser.add_argument('--data_path', default='Data/parabolic.csv', # 'Data/surface_R2.csv'
+    parser.add_argument('--data_path', default='Data/hyper_para.csv', # 'Data/surface_R2.csv'
                         type=str)
     parser.add_argument('--save_model_path', default='trained_models/main/parabolic', #'trained_models/surface_R2'
                         type=str)
@@ -117,6 +117,8 @@ def main():
         running_loss_rec = 0.0
         running_loss_kld = 0.0
         for x in trainloader:
+            print(x.shape)
+            break
             #x = x.to(args.device) #If DATA is not saved to device
             _, x_hat, mu, var, kld, rec_loss, elbo = model(x)
             optimizer.zero_grad(set_to_none=True) #Based on performance tuning
@@ -128,6 +130,7 @@ def main():
             running_loss_kld += kld.item()
 
             #del x, x_hat, mu, var, kld, rec_loss, elbo #In case you run out of memory
+        break
 
         train_epoch_loss = running_loss_elbo/N
         train_loss_elbo.append(train_epoch_loss)

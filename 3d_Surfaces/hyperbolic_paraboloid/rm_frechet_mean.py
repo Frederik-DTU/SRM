@@ -32,7 +32,7 @@ import argparse
 pi = math.pi
 
 #Own files
-from rm_com import riemannian_data
+from rm_computations import rm_data
 from VAE_surface3d import VAE_3d
 
 #%% Fun
@@ -100,22 +100,25 @@ def main():
     model.eval()
     
     #Loading module
-    rm = riemannian_data(model.h, model.g, T=args.T, 
-                         eps = args.eps, MAX_ITER=args.MAX_ITER)
+    rm = rm_data(model.h, model.g, args.device)
     
-    Z = model.h(DATA)[0]
+    Z = model.h(DATA)
     Z = Z[0:args.batch_size]
     
-    L, muz_init, mug_init, mu_z, mu_g = rm.get_frechet_mean(Z, alpha_mu = 0.1, 
-                                                            alpha_g = 0.1,
-                                                            print_conv=True)
+    muz_linear, mug_linear = rm.compute_euclidean_mean(Z)
+    
+    loss, muz_geodesic = rm.compute_frechet_mean(Z, muz_linear, epochs_geodesic=100000,
+                                                 epochs_frechet=100000,
+                                                 print_com = False,
+                                                 save_step=100)
+    mug_geodesic = model.g(muz_geodesic)
     
     checkpoint = args.save_path+args.names+'.pt'
-    torch.save({'L': L,
-                 'muz_init': muz_init,
-                 'mug_init': mug_init,
-                 'mu_z': mu_z,
-                 'mu_g': mu_g,
+    torch.save({'loss': loss,
+                 'muz_linear': muz_linear,
+                 'mug_linear': mug_linear,
+                 'muz_geodesic': muz_geodesic,
+                 'mug_geodesic': mug_geodesic,
                  'batch_size': args.batch_size}, 
                 checkpoint)
 

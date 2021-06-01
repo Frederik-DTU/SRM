@@ -48,15 +48,15 @@ def parse_args():
     # File-paths
     parser.add_argument('--data_path', default='Data/hyper_para.csv', 
                         type=str)
-    parser.add_argument('--save_path', default='rm_computations/simple_geodesic/', 
+    parser.add_argument('--save_path', default='rm_computations/dmat/', 
                         type=str)
-    parser.add_argument('--name', default='simple_geodesic',
+    parser.add_argument('--names', default='dmat',
                         type=str)
 
     #Hyper-parameters
     parser.add_argument('--device', default='cpu', #'cuda:0'
                         type=str)
-    parser.add_argument('--MAX_ITER', default=100000,
+    parser.add_argument('--MAX_ITER', default=100,
                         type=int)
     parser.add_argument('--eps', default=0.1,
                         type=int)
@@ -64,6 +64,8 @@ def parse_args():
                         type=int)
     parser.add_argument('--alpha', default=1,
                         type=float)
+    parser.add_argument('--batch_size', default=10,
+                        type=int)
     parser.add_argument('--lr', default=0.0001,
                         type=float)
 
@@ -97,45 +99,19 @@ def main():
     
     model.eval()
     
-    #Latent coordinates
-    zx = (torch.tensor([-3,-3])).float()
-    zy = (torch.tensor([3,-3])).float()
-    
-    #Coordinates on the manifold
-    x = (torch.tensor(x3_hyper_para(zx[0],zx[1]))).float()
-    y = (torch.tensor(x3_hyper_para(zy[0],zy[1]))).float()
-    
-    #Mean of approximate posterier
-    hx = model.h(x)
-    hy = model.h(y)
-    
-    #Output of the mean
-    gx = model.g(hx)
-    gy = model.g(hy)
-    
     #Loading module
     rm = rm_data(model.h, model.g, args.device)
     
-    z_linear = rm.interpolate(hx, hy, args.T)
-    loss, z_geodesic = rm.compute_geodesic(z_linear, 100000)
-    g_linear = model.g(z_linear)
-    g_geodesic = model.g(z_geodesic)
-    L_linear = rm.arc_length(g_linear)
-    L_geodesic = rm.arc_length(g_geodesic)
+    Z = model.h(DATA)
+    Z = Z[0:args.batch_size]
     
-    checkpoint = args.save_path+args.name+'.pt'
-    torch.save({'loss': loss,
-                'z_linear': z_linear,
-                'z_geodesic': z_geodesic,
-                'g_linear': g_linear,
-                'g_geodesic': g_geodesic,
-                'L_linear': L_linear.item(),
-                'L_geodesic': L_geodesic.item(),
-                'gx': gx,
-                'gy': gy,
-                'hx': hx,
-                'hy': hy}, 
-               checkpoint)
+    muz_linear, mug_linear = rm.compute_euclidean_mean(Z)
+    
+    dmat = rm.geodesic_distance_matrix(Z, epochs=100000, T=100)
+    
+    checkpoint = args.save_path+args.names+'.pt'
+    torch.save({'dmat': dmat}, 
+                checkpoint)
 
     return
 

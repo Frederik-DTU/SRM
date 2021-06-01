@@ -30,7 +30,7 @@ import torchvision.transforms as transforms
 import argparse
 
 #Own files
-from rm_com import riemannian_data
+from rm_computations import rm_data
 from VAE_celeba import VAE_CELEBA
 
 #%% Parser for command line arguments
@@ -100,8 +100,7 @@ def main():
     dataset_subset = torch.utils.data.Subset(dataset, subset_indices)
     
     #Loading module
-    rm = riemannian_data(model.h, model.g, T=args.T, 
-                         eps = args.eps, MAX_ITER=args.MAX_ITER)
+    rm = rm_data(model.h, model.g, args.device)
     
     img_height = args.size+2
     img_n = len(subset_indices)
@@ -112,16 +111,20 @@ def main():
         x = (dataset_subset[2*i][0]).view(1, 3, args.size, args.size)
         y = (dataset_subset[2*i+1][0]).view(1, 3, args.size, args.size)
         
-        hx = model.h(x)[0]
-        hy = model.h(y)[0]
+        hx = model.h(x)
+        hy = model.h(y)
+                
+        gamma_linear = rm.interpolate(hx, hy, args.T)
         
-        gamma_linear = rm.interpolate(hx, hy)
-        gamma_geodesic = rm.geodesic_path_al1(gamma_linear, alpha = 0.1,
-                                              print_conv = True)
+        loss, gammaz_geodesic = rm.compute_geodesic(gamma_linear,epochs=100000)
+        gamma_g_geodesic = model.g(gammaz_geodesic)
+        gamma_g_linear = model.g(gamma_linear)
+        L_linear = rm.arc_length(gamma_g_linear)
+        L_geodesic = rm.arc_length(gamma_g_geodesic)
             
-        G_plot = torch.cat((gamma_geodesic[3].detach(), gamma_geodesic[7].detach()), dim = 0)
+        G_plot = torch.cat((gamma_g_linear.detach(), gamma_g_geodesic.detach()), dim = 0)
         
-        arc_length = ['{0:.4f}'.format(gamma_geodesic[5]), '{0:.4f}'.format(gamma_geodesic[6])]
+        arc_length = ['{0:.4f}'.format(L_linear), '{0:.4f}'.format(L_geodesic)]
         tick_list = [img_height/2, img_height/2+img_height]
         
         torch.save({'G_plot': G_plot,

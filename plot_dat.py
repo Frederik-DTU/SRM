@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
     
 def x3_fun(x1, x2):
     
-    return x1**2-x2**2
+    return x1, x2, x1**2-x2**2
 
 class plot_3d_fun(object):
     def __init__(self,

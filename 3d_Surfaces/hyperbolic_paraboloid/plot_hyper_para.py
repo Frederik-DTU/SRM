@@ -27,16 +27,21 @@ sys.path.append(parentdir)
 import torch
 import torch.optim as optim
 import pandas as pd
+import numpy as np
+import sympy as sym
 
 #Own files
 from plot_dat import plot_3d_fun
 from VAE_surface3d import VAE_3d
+from rm_computations import rm_geometry
 
 #%% Function for plotting
 
 def x3_hyper_para(x1, x2):
     
     return x1, x2, x1**2-x2**2
+
+fun = x3_hyper_para
 
 #%% Loading data and model
 
@@ -47,7 +52,6 @@ device = 'cpu'
 
 #Parabolic data
 data_name = 'hyper_para'
-fun = x3_hyper_para
 
 #Loading files
 data_path = 'Data/'+data_name+'.csv'
@@ -72,6 +76,13 @@ rec_loss = checkpoint['rec_loss']
 kld_loss = checkpoint['KLD']
 
 model.eval()
+
+#Class to the Riemannian Geometry assumining known metric matrix function
+rm = rm_geometry()
+x1, x2 = sym.symbols('x1 x2')
+x = sym.Matrix([x1, x2])
+param_fun = sym.Matrix([x1, x2, x1**2-x2**2])
+rm.compute_mmf(param_fun, x)
 
 #%% Plotting true data
 
@@ -122,40 +133,55 @@ gx = checkpoint['gx']
 gy = checkpoint['gy']
 points = torch.transpose(torch.cat((gx.view(-1,1), gy.view(-1,1)), dim = 1), 0, 1)
 
-Z_old = checkpoint['Z_old'].detach().numpy()
-Z_new = checkpoint['Z_new'].detach().numpy()
-G_old = checkpoint['G_old'].detach().numpy()
-G_new = checkpoint['G_new'].detach().numpy()
-L_old = checkpoint['L_old']
-L_new = checkpoint['L_new']
+z_linear = checkpoint['z_linear'].detach().numpy()
+z_geodesic = checkpoint['z_geodesic'].detach().numpy()
+g_linear = checkpoint['g_linear'].detach().numpy()
+g_geodesic = checkpoint['g_geodesic'].detach().numpy()
+L_linear = checkpoint['L_linear']
+L_geodesic = checkpoint['L_geodesic']
+
+zx = np.array([-3.0,-3.0])
+zy = np.array([3.0,-3.0])
+y_init = np.zeros((4, 100))
+z_true_geodesic = rm.bvp_geodesic(zx, zy, 100, y_init).transpose()
+g1, g2, g3 = fun(z_true_geodesic[:,0], z_true_geodesic[:,1])
+g_true_geodesic = np.vstack((g1,g2,g3)).transpose()
+L_true = rm.arc_length(g_true_geodesic)
 
 data_plot.plot_geodesic_in_X_3d(fun, #points.detach().numpy(),
                           [-4,4],[-4,4],
-                          [G_old, 'Interpolation (L=%.4f)'%L_old], 
-                          [G_new, 'Approximated Geodesic (L=%.4f)'%L_new])
+                          [g_linear, 'Interpolation (L=%.4f)'%L_linear], 
+                          [g_geodesic, 'Approximated Geodesic (L=%.4f)'%L_geodesic],
+                          [g_true_geodesic, 'True Geodesic (L=%.4f)'%L_true])
 
-data_plot.plot_geodesic_in_Z_2d([Z_old, 'Interpolation (L=%.4f)'%L_old], 
-                          [Z_new, 'Approximated Geodesic (L=%.4f)'%L_new])
+data_plot.plot_geodesic_in_Z_2d([z_linear, 'Interpolation (L=%.4f)'%L_linear], 
+                          [z_geodesic, 'Approximated Geodesic (L=%.4f)'%L_geodesic])
 
 #%% Plotting Frechet mean
 
 load = 'rm_computations/frechet_mean/frechet_mean.pt'
 checkpoint = torch.load(load, map_location=device)
-L = checkpoint['L']
-muz_init = checkpoint['muz_init'].view(-1)
-mug_init = checkpoint['mug_init'].view(-1)
-mu_z = checkpoint['mu_z'].view(-1)
-mu_g = checkpoint['mu_g'].view(-1)
+loss = checkpoint['loss']
+muz_linear = checkpoint['muz_linear'].view(-1)
+mug_linear = checkpoint['mug_linear'].view(-1)
+muz_geodesic = checkpoint['muz_geodesic'].view(-1)
+mug_geodesic = checkpoint['mug_geodesic'].view(-1)
 batch_size = checkpoint['batch_size']
 
 data_batch = DATA[0:batch_size].detach().numpy()
-Z = model.h(DATA[0:batch_size])[0]
+Z = model.h(DATA[0:batch_size])
+
+true_mean = rm.karcher_mean_algo(Z.detach().numpy().transpose())
+true_mean = true_mean[:,-1]
+g1, g2, g3 = fun(true_mean[0], true_mean[1])
+g_true_mean = np.vstack((g1,g2,g3))
 
 data_plot.plot_means_with_true_surface3d(fun, data_batch, [-2,2], [-2,2],
                               [-4,4],[-4,4],[-4,4],
-                              [mug_init.detach().numpy(), 'Linear mean'], 
-                              [mu_g.detach().numpy(), 'Approximated Frechét mean'])
+                              [mug_linear.detach().numpy(), 'Linear mean'], 
+                              [mug_geodesic.detach().numpy(), 'Approximated Frechét mean'],
+                              [g_true_mean, 'Test'])
 
-data_plot.plot_mean_in_Z2d(Z.detach().numpy(), [muz_init.detach().numpy(), 'Linear mean'], 
-                           [mu_z.detach().numpy(), 'Approximated Frechét mean'])
+data_plot.plot_mean_in_Z2d(Z.detach().numpy(), [muz_linear.detach().numpy(), 'Linear mean'], 
+                           [mug_linear.detach().numpy(), 'Approximated Frechét mean'])
     
