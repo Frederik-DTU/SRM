@@ -662,7 +662,7 @@ class rm_data:
         v = za-zb
         step = torch.linspace(0,1,T+1)
         for i in range(T+1):
-            geodesic_z[i] = zc+v[0]*v
+            geodesic_z[i] = zc+step[i]*v
             
         geodesic_g = self.model_decoder(geodesic_z)
         

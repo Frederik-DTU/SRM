@@ -39,7 +39,7 @@ from rm_computations import rm_geometry
 
 def x3_hyper_para(x1, x2):
     
-    return x1, x2, x1**2-x2**2
+    return x1, x2, x1**2-x2**2 
 
 fun = x3_hyper_para
 
@@ -126,7 +126,7 @@ data_plot.plot_dat_in_Z_2d([std, 'std'])
 
 #%% Plotting the Riemannian simple geodesics
 
-load_path = 'rm_computations/simple_geodesic/simple_geodesic.pt'
+load_path = 'rm_computations/simple_geodesic.pt'
 
 checkpoint = torch.load(load_path, map_location=device)
 gx = checkpoint['gx']
@@ -159,7 +159,7 @@ data_plot.plot_geodesic_in_Z_2d([z_linear, 'Interpolation (L=%.4f)'%L_linear],
 
 #%% Plotting Frechet mean
 
-load = 'rm_computations/frechet_mean/frechet_mean.pt'
+load = 'rm_computations/frechet_mean.pt'
 checkpoint = torch.load(load, map_location=device)
 loss = checkpoint['loss']
 muz_linear = checkpoint['muz_linear'].view(-1)
