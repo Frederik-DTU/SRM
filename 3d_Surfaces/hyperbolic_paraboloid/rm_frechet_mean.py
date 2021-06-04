@@ -35,12 +35,6 @@ pi = math.pi
 from rm_computations import rm_data
 from VAE_surface3d import VAE_3d
 
-#%% Fun
-
-def x3_hyper_para(x1, x2):
-    
-    return x1, x2, x1**2-x2**2
-
 #%% Parser for command line arguments
 
 def parse_args():
@@ -48,26 +42,22 @@ def parse_args():
     # File-paths
     parser.add_argument('--data_path', default='Data/hyper_para.csv', 
                         type=str)
-    parser.add_argument('--save_path', default='rm_computations/frechet_mean/', 
-                        type=str)
-    parser.add_argument('--names', default='frechet_mean',
+    parser.add_argument('--save_path', default='rm_computations/frechet_mean.pt', 
                         type=str)
 
     #Hyper-parameters
     parser.add_argument('--device', default='cpu', #'cuda:0'
                         type=str)
-    parser.add_argument('--MAX_ITER', default=100,
-                        type=int)
-    parser.add_argument('--eps', default=0.1,
+    parser.add_argument('--epochs', default=100000,
                         type=int)
     parser.add_argument('--T', default=100,
                         type=int)
-    parser.add_argument('--alpha', default=1,
-                        type=float)
-    parser.add_argument('--batch_size', default=10,
+    parser.add_argument('--batch_size', default=100,
                         type=int)
     parser.add_argument('--lr', default=0.0001,
                         type=float)
+    parser.add_argument('--save_step', default=100,
+                        type=int)
 
     #Continue training or not
     parser.add_argument('--load_model_path', default='trained_models/main/hyper_para_epoch_100000.pt',
@@ -107,20 +97,19 @@ def main():
     
     muz_linear, mug_linear = rm.compute_euclidean_mean(Z)
     
-    loss, muz_geodesic = rm.compute_frechet_mean(Z, muz_linear, epochs_geodesic=100000,
-                                                 epochs_frechet=100000,
+    loss, muz_geodesic = rm.compute_frechet_mean(Z, muz_linear, epochs_geodesic=args.epochs,
+                                                 epochs_frechet=args.epochs,
                                                  print_com = False,
-                                                 save_step=100)
+                                                 save_step=args.save_step)
     mug_geodesic = model.g(muz_geodesic)
     
-    checkpoint = args.save_path+args.names+'.pt'
     torch.save({'loss': loss,
                  'muz_linear': muz_linear,
                  'mug_linear': mug_linear,
                  'muz_geodesic': muz_geodesic,
                  'mug_geodesic': mug_geodesic,
                  'batch_size': args.batch_size}, 
-                checkpoint)
+                args.save_path)
 
     return
 

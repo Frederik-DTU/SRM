@@ -433,10 +433,17 @@ class rm_data:
         _, z_geodesic = self.compute_geodesic(z_init, epochs, lr, print_com, save_step,
                                            eps)
         g_geodesic = self.model_decoder(z_geodesic)
-        v_z = (z_geodesic[1]-z_geodesic[0])*T
         v_g = (g_geodesic[1]-g_geodesic[0])*T
         
-        return v_z, v_g
+        shape = list(g_geodesic.shape)
+        shape = [1]+shape[1:]
+        x0 = g_geodesic[0].clone().detach().requires_grad_(True).view(shape)
+        z0 = self.model_encoder(x0).view(-1)
+        jacobi_h = self.jacobian_mat(z0, x0)
+        jacobi_h = jacobi_h.view(len(z0.view(-1)), len(x0.view(-1)))
+        v_z = torch.mv(jacobi_h, v_g.view(-1))
+        
+        return v_z, v_g, z_geodesic, g_geodesic
     
     def geodesic_distance_matrix(self, Z, epochs = 100000, lr = 1e-4, T=100):
         
@@ -617,14 +624,16 @@ class rm_data:
         gdim = [T+1]
         gdim = gdim + list((x0.squeeze()).shape)
         
-        Z = torch.empty(zdim)
-        G = torch.empty(gdim)
+        Z = torch.zeros(zdim)
+        G = torch.zeros(gdim)
         gdim = x0.squeeze().shape
             
         zi = z0
         xi = x0.view(-1)
         u_prev = u0.view(-1)
-        for i in range(0, T):
+        Z[0] = z0
+        G[0] = x0
+        for i in range(0, T-1):
             print(f"Iteration {i+1}/{T}")
             xi = (xi+delta*u_prev).view(shape)
             zi = self.model_encoder(xi).view(-1)
@@ -634,9 +643,10 @@ class rm_data:
             ui = torch.mv(torch.matmul(U, torch.transpose(U, 0, 1)),u_prev.view(-1))
             ui = torch.norm(u_prev)/torch.norm(ui)*ui
             u_prev = ui
-            Z[i] = zi
-            G[i] = xi.view(gdim)
+            Z[i+1] = zi
+            G[i+1] = xi.view(gdim)
         
+        print(f"Iteration {T}/{T}")
         xT = (xi+delta*u_prev).view(shape)
         zT = self.model_encoder(xT)
         xT = self.model_decoder(zT.view(1,-1))
@@ -645,6 +655,20 @@ class rm_data:
         
         return Z, G
     
+    def linear_parallel_translation(self, za, zb, zc, T=10):
+        
+        shape = [T+1]+list(za.squeeze().shape)
+        geodesic_z = torch.zeros(shape)
+        v = za-zb
+        step = torch.linspace(0,1,T+1)
+        for i in range(T+1):
+            geodesic_z[i] = zc+v[0]*v
+            
+        geodesic_g = self.model_decoder(geodesic_z)
+        
+        return geodesic_z, geodesic_g
+        
+        
     def get_jacobian(self, net_fun, x, n_out):
         x = x.squeeze()
         n = x.shape[0]

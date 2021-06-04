@@ -42,7 +42,7 @@ def parse_args():
     # File-paths
     parser.add_argument('--data_path', default='Data/hyper_para.csv', 
                         type=str)
-    parser.add_argument('--save_path', default='rm_computations/dmat/dmat.pt', 
+    parser.add_argument('--save_path', default='rm_computations/dmat.pt', 
                         type=str)
 
     #Hyper-parameters

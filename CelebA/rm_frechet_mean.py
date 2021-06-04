@@ -41,20 +41,18 @@ def parse_args():
     # File-paths
     parser.add_argument('--data_path', default='Data_groups/group_blond_closed/', 
                         type=str)
-    parser.add_argument('--save_path', default='rm_computations/frechet_mean/group_blond_closed.pt', 
+    parser.add_argument('--save_path', default='rm_computations/group_blond_closed.pt', 
                         type=str)
 
     #Hyper-parameters
     parser.add_argument('--device', default='cpu', #'cuda:0'
                         type=str)
-    parser.add_argument('--MAX_ITER', default=10,
-                        type=int)
-    parser.add_argument('--eps', default=0.1,
+    parser.add_argument('--epochs', default=100000,
                         type=int)
     parser.add_argument('--T', default=10,
                         type=int)
-    parser.add_argument('--alpha', default=1,
-                        type=float)
+    parser.add_argument('--batch_size', default=100,
+                        type=int)
     parser.add_argument('--lr', default=0.0002,
                         type=float)
     parser.add_argument('--size', default=64,
@@ -84,7 +82,7 @@ def main():
                                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
                            ]))
     
-    trainloader = DataLoader(dataset, batch_size=100,
+    trainloader = DataLoader(dataset, batch_size=args.batch_size,
                          shuffle=False, num_workers=0)
     
     DATA = next(iter(trainloader))
@@ -106,15 +104,16 @@ def main():
     
     muz_linear, mug_linear = rm.compute_euclidean_mean(Z)
     loss, muz_geodesic = rm.compute_frechet_mean(Z, muz_linear, T = args.T,
-                                                 epochs_geodesic = 100000,
-                                                 epochs_frechet = 100000)
+                                                 epochs_geodesic = args.epochs,
+                                                 epochs_frechet = args.epochs)
     mug_geodesic = model.g(muz_geodesic)
     
     torch.save({'loss': loss,
                  'muz_linear': muz_linear,
                  'mug_linear': mug_linear,
                  'muz_geodesic': muz_geodesic,
-                 'mug_geodesic': mug_geodesic}, 
+                 'mug_geodesic': mug_geodesic,
+                 'T': args.T}, 
                 args.save_path)
 
     return

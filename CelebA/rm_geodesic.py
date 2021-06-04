@@ -40,22 +40,16 @@ def parse_args():
     # File-paths
     parser.add_argument('--data_path', default="../../Data/CelebA/celeba", 
                         type=str)
-    parser.add_argument('--save_path', default='rm_computations/simple_geodesic/', 
-                        type=str)
-    parser.add_argument('--name', default='simple_geodesic',
+    parser.add_argument('--save_path', default='rm_computations/simple_geodesic.pt', 
                         type=str)
 
     #Hyper-parameters
     parser.add_argument('--device', default='cpu', #'cuda:0'
                         type=str)
-    parser.add_argument('--MAX_ITER', default=100,
-                        type=int)
-    parser.add_argument('--eps', default=0.1,
+    parser.add_argument('--epochs', default=100000,
                         type=int)
     parser.add_argument('--T', default=10,
                         type=int)
-    parser.add_argument('--alpha', default=1,
-                        type=float)
     parser.add_argument('--lr', default=0.0002,
                         type=float)
     parser.add_argument('--size', default=64,
@@ -116,7 +110,7 @@ def main():
                 
         gamma_linear = rm.interpolate(hx, hy, args.T)
         
-        loss, gammaz_geodesic = rm.compute_geodesic(gamma_linear,epochs=100000)
+        loss, gammaz_geodesic = rm.compute_geodesic(gamma_linear,epochs=args.epochs)
         gamma_g_geodesic = model.g(gammaz_geodesic)
         gamma_g_linear = model.g(gamma_linear)
         L_linear = rm.arc_length(gamma_g_linear)
@@ -131,7 +125,7 @@ def main():
                     'arc_length': arc_length,
                     'tick_list': tick_list,
                     'T': args.T}, 
-                   args.save_path+'geodesic'+str(i+1)+'.pt')
+                   args.save_path)
 
     return
 
