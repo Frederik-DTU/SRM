@@ -35,12 +35,18 @@ pi = math.pi
 from rm_computations import rm_data
 from VAE_surface3d import VAE_3d
 
+#%% Fun
+
+def fun(x1, x2):
+    
+    return x1, x2, x1**2-x2**2
+
 #%% Parser for command line arguments
 
 def parse_args():
     parser = argparse.ArgumentParser()
     # File-paths
-    parser.add_argument('--data_name', default='sphere', 
+    parser.add_argument('--data_name', default='hyperbolic_paraboloid', 
                         type=str)
 
     #Hyper-parameters
@@ -54,8 +60,6 @@ def parse_args():
                         type=int)
     parser.add_argument('--lr', default=0.0001,
                         type=float)
-    parser.add_argument('--save_step', default=100,
-                        type=int)
 
     #Continue training or not
     parser.add_argument('--load_epoch', default='100000.pt',
@@ -74,8 +78,8 @@ def main():
     
     #Loading data
     data_path = 'Data/'+args.data_name+'.csv'
-    load_path = 'trained_models/'+args.data_name+'_epoch_'+args.load_epoch
-    save_path = 'rm_computations/'+'frechet_mean.pt'
+    load_path = 'trained_models/'+args.data_name+'/'+args.data_name+'_epoch_'+args.load_epoch
+    save_path = 'rm_computations/'+args.data_name+'/'+'simple_geodesic.pt'
     
     df = pd.read_csv(data_path, index_col=0)
     DATA = torch.Tensor(df.values)
@@ -91,27 +95,44 @@ def main():
     
     model.eval()
     
+    #Latent coordinates
+    zx = (torch.tensor([-3,-3])).float()
+    zy = (torch.tensor([3,-3])).float()
+    
+    #Coordinates on the manifold
+    x = (torch.tensor(fun(zx[0],zx[1]))).float()
+    y = (torch.tensor(fun(zy[0],zy[1]))).float()
+    
+    #Mean of approximate posterier
+    hx = model.h(x)
+    hy = model.h(y)
+    
+    #Output of the mean
+    gx = model.g(hx)
+    gy = model.g(hy)
+    
     #Loading module
     rm = rm_data(model.h, model.g, args.device)
     
-    Z = model.h(DATA)
-    Z = Z[0:args.batch_size]
-    
-    muz_linear, mug_linear = rm.compute_euclidean_mean(Z)
-    
-    loss, muz_geodesic = rm.compute_frechet_mean(Z, muz_linear, epochs_geodesic=100000,
-                                                 epochs_frechet=args.epochs,
-                                                 print_com = False,
-                                                 save_step=args.save_step)
-    mug_geodesic = model.g(muz_geodesic)
+    z_linear = rm.interpolate(hx, hy, args.T)
+    loss, z_geodesic = rm.compute_geodesic(z_linear, args.epochs)
+    g_linear = model.g(z_linear)
+    g_geodesic = model.g(z_geodesic)
+    L_linear = rm.arc_length(g_linear)
+    L_geodesic = rm.arc_length(g_geodesic)
     
     torch.save({'loss': loss,
-                 'muz_linear': muz_linear,
-                 'mug_linear': mug_linear,
-                 'muz_geodesic': muz_geodesic,
-                 'mug_geodesic': mug_geodesic,
-                 'batch_size': args.batch_size}, 
-                save_path)
+                'z_linear': z_linear,
+                'z_geodesic': z_geodesic,
+                'g_linear': g_linear,
+                'g_geodesic': g_geodesic,
+                'L_linear': L_linear.item(),
+                'L_geodesic': L_geodesic.item(),
+                'gx': gx,
+                'gy': gy,
+                'hx': hx,
+                'hy': hy}, 
+               save_path)
 
     return
 

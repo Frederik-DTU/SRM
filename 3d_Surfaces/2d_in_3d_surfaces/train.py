@@ -40,7 +40,7 @@ from VAE_surface3d import VAE_3d
 def parse_args():
     parser = argparse.ArgumentParser()
     # File-paths
-    parser.add_argument('--data_name', default='sphere', 
+    parser.add_argument('--data_name', default='hyperbolic_paraboloid', 
                         type=str)
     parser.add_argument('--save_step', default=100,
                         type=int)

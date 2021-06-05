@@ -54,8 +54,6 @@ def parse_args():
                         type=int)
     parser.add_argument('--lr', default=0.0001,
                         type=float)
-    parser.add_argument('--save_step', default=100,
-                        type=int)
 
     #Continue training or not
     parser.add_argument('--load_epoch', default='100000.pt',
@@ -75,7 +73,7 @@ def main():
     #Loading data
     data_path = 'Data/'+args.data_name+'.csv'
     load_path = 'trained_models/'+args.data_name+'_epoch_'+args.load_epoch
-    save_path = 'rm_computations/'+'frechet_mean.pt'
+    save_path = 'rm_computations/'+'dmat.pt'
     
     df = pd.read_csv(data_path, index_col=0)
     DATA = torch.Tensor(df.values)
@@ -96,21 +94,11 @@ def main():
     
     Z = model.h(DATA)
     Z = Z[0:args.batch_size]
+        
+    dmat = rm.geodesic_distance_matrix(Z, epochs=args.epochs, T=args.T)
     
-    muz_linear, mug_linear = rm.compute_euclidean_mean(Z)
-    
-    loss, muz_geodesic = rm.compute_frechet_mean(Z, muz_linear, epochs_geodesic=100000,
-                                                 epochs_frechet=args.epochs,
-                                                 print_com = False,
-                                                 save_step=args.save_step)
-    mug_geodesic = model.g(muz_geodesic)
-    
-    torch.save({'loss': loss,
-                 'muz_linear': muz_linear,
-                 'mug_linear': mug_linear,
-                 'muz_geodesic': muz_geodesic,
-                 'mug_geodesic': mug_geodesic,
-                 'batch_size': args.batch_size}, 
+    torch.save({'dmat': dmat,
+                'Z_batch': Z}, 
                 save_path)
 
     return

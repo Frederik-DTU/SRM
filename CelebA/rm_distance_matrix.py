@@ -42,7 +42,7 @@ def parse_args():
     # File-paths
     parser.add_argument('--data_path', default="../../Data/CelebA/celeba", 
                         type=str)
-    parser.add_argument('--save_path', default='rm_computations/dmat.pt', 
+    parser.add_argument('--save_path', default='rm_computations/dmat_blond_closed.pt', 
                         type=str)
     parser.add_argument('--group', default='Data_groups/group_blond_closed/', 
                         type=str)
@@ -103,8 +103,8 @@ def main():
     rm = rm_data(model.h, model.g, args.device)
     dmat = rm.geodesic_distance_matrix(z, epochs=args.epochs, T=args.T)
     
-    torch.save({'x': x,
-                'z': z,
+    torch.save({'x_batch': x,
+                'z_batch': z,
                 'dmat': dmat}, 
                args.save_path)
     

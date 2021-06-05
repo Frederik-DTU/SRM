@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+ # -*- coding: utf-8 -*-
 """
 Created on Tue Feb 23 00:44:58 2021
 
@@ -35,6 +35,12 @@ pi = math.pi
 from rm_computations import rm_data
 from VAE_surface3d import VAE_3d
 
+#%% Fun
+
+def fun(x1, x2):
+    
+    return x1, x2, x1**2-x2**2
+
 #%% Parser for command line arguments
 
 def parse_args():
@@ -54,8 +60,6 @@ def parse_args():
                         type=int)
     parser.add_argument('--lr', default=0.0001,
                         type=float)
-    parser.add_argument('--save_step', default=100,
-                        type=int)
 
     #Continue training or not
     parser.add_argument('--load_epoch', default='100000.pt',
@@ -73,9 +77,10 @@ def main():
     args = parse_args()
     
     #Loading data
+    #Loading data
     data_path = 'Data/'+args.data_name+'.csv'
     load_path = 'trained_models/'+args.data_name+'_epoch_'+args.load_epoch
-    save_path = 'rm_computations/'+'frechet_mean.pt'
+    save_path = 'rm_computations/'+'parallel_transport.pt'
     
     df = pd.read_csv(data_path, index_col=0)
     DATA = torch.Tensor(df.values)
@@ -91,27 +96,47 @@ def main():
     
     model.eval()
     
+    #Latent coordinates
+    za = (torch.tensor([-3,-3])).float()
+    zb = (torch.tensor([3,-3])).float()
+    zc = (torch.tensor([-3,3])).float()
+    
+    #Coordinates on the manifold
+    a = (torch.tensor(fun(za[0],za[1]))).float()
+    b = (torch.tensor(fun(zb[0],zb[1]))).float()
+    c = (torch.tensor(fun(zc[0],zc[1]))).float()
+    
+    #Mean of approximate posterier
+    ha = model.h(a)
+    hb = model.h(b)
+    hc = model.h(c)
+    
     #Loading module
     rm = rm_data(model.h, model.g, args.device)
     
-    Z = model.h(DATA)
-    Z = Z[0:args.batch_size]
+    zc_linear, gc_linear = rm.linear_parallel_translation(ha, hb, hc, T=args.T)
+    va_z, va_g, zab_geodesic, gab_geodesic = rm.Log_map(ha, hb, epochs=args.epochs, 
+                                                  T = args.T)
+    z_init = rm.interpolate(ha, hc, T = args.T)
+    _, z_ac = rm.compute_geodesic(z_init, epochs=args.epochs)
+    g_ac = model.g(z_ac)
     
-    muz_linear, mug_linear = rm.compute_euclidean_mean(Z)
+    vac_z, vac_g = rm.parallel_translation_al2(z_ac, va_z)
+    zc_geodesic, gc_geodesic = rm.geodesic_shooting_al3(hc, vac_g, T = args.T)
     
-    loss, muz_geodesic = rm.compute_frechet_mean(Z, muz_linear, epochs_geodesic=100000,
-                                                 epochs_frechet=args.epochs,
-                                                 print_com = False,
-                                                 save_step=args.save_step)
-    mug_geodesic = model.g(muz_geodesic)
-    
-    torch.save({'loss': loss,
-                 'muz_linear': muz_linear,
-                 'mug_linear': mug_linear,
-                 'muz_geodesic': muz_geodesic,
-                 'mug_geodesic': mug_geodesic,
-                 'batch_size': args.batch_size}, 
-                save_path)
+    torch.save({'va_z': va_z,
+                'va_g': va_g,
+                'zab_geodesic': zab_geodesic,
+                'gab_geodesic': gab_geodesic,
+                'z_ac': z_ac,
+                'g_ac': g_ac,
+                'vac_z': vac_z,
+                'vac_g': vac_g,
+                'zc_geodesic': zc_geodesic,
+                'gc_geodesic': gc_geodesic,
+                'zc_linear': zc_linear,
+                'gc_linear': gc_linear}, 
+               save_path)
 
     return
 

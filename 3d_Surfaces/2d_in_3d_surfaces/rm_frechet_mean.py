@@ -40,7 +40,7 @@ from VAE_surface3d import VAE_3d
 def parse_args():
     parser = argparse.ArgumentParser()
     # File-paths
-    parser.add_argument('--data_name', default='sphere', 
+    parser.add_argument('--data_name', default='hyperbolic_paraboloid', 
                         type=str)
 
     #Hyper-parameters
@@ -74,8 +74,8 @@ def main():
     
     #Loading data
     data_path = 'Data/'+args.data_name+'.csv'
-    load_path = 'trained_models/'+args.data_name+'_epoch_'+args.load_epoch
-    save_path = 'rm_computations/'+'frechet_mean.pt'
+    load_path = 'trained_models/'+args.data_name+'/'+args.data_name+'_epoch_'+args.load_epoch
+    save_path = 'rm_computations/'+args.data_name+'/'+'frechet_mean.pt'
     
     df = pd.read_csv(data_path, index_col=0)
     DATA = torch.Tensor(df.values)
