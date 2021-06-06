@@ -39,14 +39,14 @@ from rm_computations import rm_geometry
 
 def fun(x1, x2):
     
-    return x1, x2, x1**2+x2**2 
+    return x1, x2, x1**2-x2**2
 
 x1, x2 = sym.symbols('x1 x2')
 x = sym.Matrix([x1, x2])
-param_fun = sym.Matrix([x1, x2, x1**2+x2**2])
+param_fun = sym.Matrix([x1, x2, x1**2-x2**2])
 
 #Data
-data_name = 'paraboloid'
+data_name = 'hyperbolic_paraboloid'
 
 #%% Loading data and model
 
@@ -157,6 +157,8 @@ data_plot.plot_geodesic_in_X_3d(fun, #points.detach().numpy(),
 data_plot.plot_geodesic_in_Z_2d([z_linear, 'Interpolation (L=%.4f)'%L_linear], 
                           [z_geodesic, 'Approximated Geodesic (L=%.4f)'%L_geodesic])
 
+data_plot.plot_geodesic_in_Z_2d([z_true_geodesic, 'True Geodesic (L=%.4f)'%L_true])
+
 #%% Plotting Frechet mean
 
 load_path = 'rm_computations/'+data_name+'/frechet_mean.pt'
@@ -187,4 +189,48 @@ data_plot.plot_means_with_true_surface3d(fun, data_batch, [-2,2], [-2,2],
 
 data_plot.plot_mean_in_Z2d(Z.detach().numpy(), [muz_linear.detach().numpy(), 'Linear mean'], 
                            [mug_linear.detach().numpy(), 'Approximated Frechét mean'])
+
+#%% Plot Parallel Translation
+
+load_path = 'rm_computations/'+data_name+'/parallel_transport.pt'
+checkpoint = torch.load(load_path, map_location=device)
+zab_geodesic = checkpoint['zab_geodesic'].detach().numpy()
+gab_geodesic = checkpoint['gab_geodesic'].detach().numpy()
+zac_geodesic = checkpoint['zac_geodesic'].detach().numpy()
+gac_geodesic = checkpoint['gac_geodesic'].detach().numpy()
+zc_geodesic = checkpoint['zc_geodesic'].detach().numpy()
+gc_geodesic = checkpoint['gc_geodesic'].detach().numpy()
+a = checkpoint['a'].detach().numpy()
+b = checkpoint['b'].detach().numpy()
+c = checkpoint['c'].detach().numpy()
+L_linear = 0
+L_geodesic = 0
+L_true = 0
+
+data_plot.plot_geodesic_in_X_3d(fun, #points.detach().numpy(),
+                          [-4,4],[-4,4],
+                          [gab_geodesic, 'Interpolation (L=%.4f)'%L_linear], 
+                          [gac_geodesic, 'Approximated Geodesic (L=%.4f)'%L_geodesic],
+                          [gc_geodesic, 'True Geodesic (L=%.4f)'%L_true])
+
+za = np.array([-3.0,-3.0])
+zb = np.array([3.0,-3.0])
+zc = np.array([-3.0,3.0])
+y_init = np.zeros((4, 100))
+z_ab = rm.bvp_geodesic(za, zb, 100, y_init).transpose()
+g1, g2, g3 = fun(z_ab[:,0], z_ab[:,1])
+g_ab = np.vstack((g1,g2,g3)).transpose()
+
+y_init = np.zeros((4, 100))
+z_ac = rm.bvp_geodesic(za, zc, 100, y_init).transpose()
+g1, g2, g3 = fun(z_ac[:,0], z_ac[:,1])
+g_ac = np.vstack((g1,g2,g3)).transpose()
+
+
+data_plot.plot_geodesic_in_X_3d(fun, #points.detach().numpy(),
+                          [-4,4],[-4,4],
+                          [g_ab, 'Interpolation (L=%.4f)'%L_linear], 
+                          [g_ac, 'Approximated Geodesic (L=%.4f)'%L_geodesic])
+
+
     

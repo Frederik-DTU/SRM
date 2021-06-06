@@ -128,8 +128,8 @@ class plot_3d_fun(object):
             y = arg[0][:,1]
             plt.plot(x, y, '-*', label=lab)
             
-        plt.xlabel('t')
-        plt.ylabel('')
+        plt.xlabel('x1')
+        plt.ylabel('x2')
         plt.grid()
         plt.legend()
         plt.title('Geodesic in Z')

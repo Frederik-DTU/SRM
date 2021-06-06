@@ -127,14 +127,17 @@ def main():
                 'va_g': va_g,
                 'zab_geodesic': zab_geodesic,
                 'gab_geodesic': gab_geodesic,
-                'z_ac': z_ac,
-                'g_ac': g_ac,
+                'zac_geodesic': z_ac,
+                'gac_geodesic': g_ac,
                 'vac_z': vac_z,
                 'vac_g': vac_g,
                 'zc_geodesic': zc_geodesic,
                 'gc_geodesic': gc_geodesic,
                 'zc_linear': zc_linear,
-                'gc_linear': gc_linear}, 
+                'gc_linear': gc_linear,
+                'a': a,
+                'b': b,
+                'c': c}, 
                save_path)
 
     return
