@@ -1,7 +1,7 @@
 #!/bin/sh
 #BSUB -q gpuv100
 #BSUB -gpu "num=1"
-#BSUB -J hyper_para
+#BSUB -J sphere
 #BSUB -n 1
 #BSUB -W 24:00
 #BSUB -R "rusage[mem=32GB]"
@@ -16,7 +16,7 @@
 module swap cuda/8.0
 module swap cudnn/v7.0-prod-cuda8
 
-python3 train_surface3d.py \
+python3 train_sphere.py \
     --data_name sphere \
     --save_step 5000 \
     --device cuda \

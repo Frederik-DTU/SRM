@@ -42,7 +42,7 @@ def parse_args():
     # File-paths
     parser.add_argument('--data_path', default="../../Data/CelebA/celeba", 
                         type=str)
-    parser.add_argument('--save_path', default='rm_computations/dmat_blond_closed.pt', 
+    parser.add_argument('--save_path', default='rm_computations/dmat.pt', 
                         type=str)
     parser.add_argument('--group1', default='Data_groups/group_blond_closed/', 
                         type=str)
@@ -65,7 +65,7 @@ def parse_args():
     parser.add_argument('--lr', default=0.0002,
                         type=float)
     parser.add_argument('--size', default=64,
-                        type=float)
+                        type=int)
 
     #Continue training or not
     parser.add_argument('--load_model_path', default='trained_models/main/celeba_epoch_6300.pt',

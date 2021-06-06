@@ -56,7 +56,7 @@ def parse_args():
     parser.add_argument('--lr', default=0.0002,
                         type=float)
     parser.add_argument('--size', default=64,
-                        type=float)
+                        type=int)
     
     #Continue training or not
     parser.add_argument('--load_model_path', default='trained_models/main/celeba_epoch_6300.pt',

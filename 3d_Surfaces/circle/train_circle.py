@@ -59,6 +59,9 @@ def parse_args():
                         type=float)
     parser.add_argument('--workers', default=0,
                         type=int)
+    parser.add_argument('--latent_dim', default=2,
+                        type=int)
+                        
 
     #Continue training or not
     parser.add_argument('--con_training', default=0,
@@ -94,9 +97,9 @@ def main():
     N = len(trainloader.dataset)
 
     model = VAE_3d(fc_h = [3, 100],
-                 fc_g = [1, 100, 3],
-                 fc_mu = [100, 1],
-                 fc_var = [100, 1],
+                 fc_g = [args.latent_dim, 100, 3],
+                 fc_mu = [100, args.latent_dim],
+                 fc_var = [100, args.latent_dim],
                  fc_h_act = [nn.ELU],
                  fc_g_act = [nn.ELU, nn.Identity],
                  fc_mu_act = [nn.Identity],

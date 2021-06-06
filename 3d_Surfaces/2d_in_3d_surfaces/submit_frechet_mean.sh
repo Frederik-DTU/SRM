@@ -1,7 +1,7 @@
 #!/bin/sh
 #BSUB -q gpuv100
 #BSUB -gpu "num=1"
-#BSUB -J circle
+#BSUB -J frechet_mean
 #BSUB -n 1
 #BSUB -W 24:00
 #BSUB -R "rusage[mem=32GB]"
@@ -16,15 +16,12 @@
 module swap cuda/8.0
 module swap cudnn/v7.0-prod-cuda8
 
-python3 train_circle.py \
-    --data_path Data/circle.csv \
-    --save_model_path trained_models/latent_dim_2/circle \
-    --save_step 5000 \
-    --device cuda \
+python3 train_celeba.py \
+    --data_name hyperbolic_paraboloid \
+    --device cpu \
     --epochs 100000 \
+    --T 100 \
     --batch_size 100 \
-    --workers 4 \
-    --latent_dim 2 \
-    --lr 0.0001  \
-    --con_training 0 \
-    --load_model_path trained_models/main/circle_epoch_70000.pt
+    --lr 0.0001 \
+    --save_step 100 \
+    --load_epoch 100000.pt
