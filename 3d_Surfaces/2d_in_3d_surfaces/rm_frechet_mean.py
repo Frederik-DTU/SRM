@@ -78,7 +78,7 @@ def main():
     save_path = 'rm_computations/'+args.data_name+'/'+'frechet_mean.pt'
     
     df = pd.read_csv(data_path, index_col=0)
-    DATA = torch.Tensor(df.values)
+    DATA = torch.Tensor(df.values).to(args.device)
     DATA = torch.transpose(DATA, 0, 1)
     
     #Loading model

@@ -85,7 +85,7 @@ def main():
     trainloader = DataLoader(dataset, batch_size=args.batch_size,
                          shuffle=False, num_workers=0)
     
-    DATA = next(iter(trainloader))
+    DATA = next(iter(trainloader))[0].to(args.device)
     
     #Plotting the trained model
     model = VAE_CELEBA().to(args.device) #Model used
@@ -100,7 +100,7 @@ def main():
     #Loading module
     rm = rm_data(model.h, model.g, args.device)
     
-    Z = model.h(DATA[0])
+    Z = model.h(DATA)
     
     muz_linear, mug_linear = rm.compute_euclidean_mean(Z)
     loss, muz_geodesic = rm.compute_frechet_mean(Z, muz_linear, T = args.T,

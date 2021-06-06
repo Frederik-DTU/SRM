@@ -44,7 +44,13 @@ def parse_args():
                         type=str)
     parser.add_argument('--save_path', default='rm_computations/dmat_blond_closed.pt', 
                         type=str)
-    parser.add_argument('--group', default='Data_groups/group_blond_closed/', 
+    parser.add_argument('--group1', default='Data_groups/group_blond_closed/', 
+                        type=str)
+    parser.add_argument('--group2', default='Data_groups/group_blond_open/', 
+                        type=str)
+    parser.add_argument('--group3', default='Data_groups/group_black_closed/', 
+                        type=str)
+    parser.add_argument('--group4', default='Data_groups/group_black_open/', 
                         type=str)
 
     #Hyper-parameters
@@ -76,7 +82,7 @@ def main():
     #Arguments
     args = parse_args()
     
-    dataset = dset.ImageFolder(root=args.group,
+    dataset = dset.ImageFolder(root=args.group1,
                                transform=transforms.Compose([
                                    transforms.Resize(args.size),
                                    transforms.CenterCrop(args.size),
@@ -87,7 +93,50 @@ def main():
     trainloader = DataLoader(dataset, batch_size=args.batch_size,
                          shuffle=False, num_workers=0)
     
-    x = next(iter(trainloader))[0]
+    x1 = next(iter(trainloader))[0].to(args.device)
+    
+    dataset = dset.ImageFolder(root=args.group2,
+                               transform=transforms.Compose([
+                                   transforms.Resize(args.size),
+                                   transforms.CenterCrop(args.size),
+                                   transforms.ToTensor(),
+                                   transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+                               ]))
+        
+    trainloader = DataLoader(dataset, batch_size=args.batch_size,
+                         shuffle=False, num_workers=0)
+    
+    x2 = next(iter(trainloader))[0].to(args.device)
+    
+    dataset = dset.ImageFolder(root=args.group3,
+                               transform=transforms.Compose([
+                                   transforms.Resize(args.size),
+                                   transforms.CenterCrop(args.size),
+                                   transforms.ToTensor(),
+                                   transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+                               ]))
+        
+    trainloader = DataLoader(dataset, batch_size=args.batch_size,
+                         shuffle=False, num_workers=0)
+    
+    x3 = next(iter(trainloader))[0].to(args.device)
+    
+    dataset = dset.ImageFolder(root=args.group4,
+                               transform=transforms.Compose([
+                                   transforms.Resize(args.size),
+                                   transforms.CenterCrop(args.size),
+                                   transforms.ToTensor(),
+                                   transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+                               ]))
+        
+    trainloader = DataLoader(dataset, batch_size=args.batch_size,
+                         shuffle=False, num_workers=0)
+    
+    x4 = next(iter(trainloader))[0].to(args.device)
+    
+    
+    X = torch.cat((x1,x2,x3,x4), 0).to(args.device)
+    X_list = [args.group1, args.group2, args.group3, args.group4]
     
     model = VAE_CELEBA().to(args.device) #Model used
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
@@ -98,14 +147,15 @@ def main():
     
     model.eval()
     
-    z = model.h(x)
+    Z = model.h(X)
     
     rm = rm_data(model.h, model.g, args.device)
-    dmat = rm.geodesic_distance_matrix(z, epochs=args.epochs, T=args.T)
+    dmat = rm.geodesic_distance_matrix(Z, epochs=args.epochs, T=args.T)
     
-    torch.save({'x_batch': x,
-                'z_batch': z,
-                'dmat': dmat}, 
+    torch.save({'x_batch': X,
+                'z_batch': Z,
+                'dmat': dmat,
+                'X_names': X_list}, 
                args.save_path)
     
     
