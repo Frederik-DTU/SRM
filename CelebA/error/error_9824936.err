@@ -1,0 +1,26 @@
+Traceback (most recent call last):
+  File "rm_frechet_mean.py", line 124, in <module>
+    main()
+  File "rm_frechet_mean.py", line 106, in main
+    loss, muz_geodesic = rm.compute_frechet_mean(Z, muz_linear, T = args.T,
+  File "/zhome/77/8/118225/Desktop/SRM/Github/SRM/rm_computations.py", line 564, in compute_frechet_mean
+    L = model(X)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/torch/nn/modules/module.py", line 727, in _call_impl
+    result = self.forward(*input, **kwargs)
+  File "/zhome/77/8/118225/Desktop/SRM/Github/SRM/rm_computations.py", line 766, in forward
+    geodesic_z = self.rm.compute_geodesic_fast(z_init, epochs=self.epochs, lr = self.lr)
+  File "/zhome/77/8/118225/Desktop/SRM/Github/SRM/rm_computations.py", line 524, in compute_geodesic_fast
+    E = model()
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/torch/nn/modules/module.py", line 727, in _call_impl
+    result = self.forward(*input, **kwargs)
+  File "/zhome/77/8/118225/Desktop/SRM/Github/SRM/rm_computations.py", line 715, in forward
+    G = self.model_decoder(self.geodesic_z)
+  File "/zhome/77/8/118225/Desktop/SRM/Github/SRM/VAE_celeba.py", line 169, in g
+    x_hat = self.decoder(z)
+  File "/zhome/77/8/118225/Desktop/SRM/Github/SRM/VAE_celeba.py", line 107, in decoder
+    x_hat = self.g_tcon5(x5)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/torch/nn/modules/module.py", line 727, in _call_impl
+    result = self.forward(*input, **kwargs)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/torch/nn/modules/conv.py", line 927, in forward
+    return F.conv_transpose2d(
+KeyboardInterrupt

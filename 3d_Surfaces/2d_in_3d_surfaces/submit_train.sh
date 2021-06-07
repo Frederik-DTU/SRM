@@ -17,7 +17,7 @@ module swap cuda/8.0
 module swap cudnn/v7.0-prod-cuda8
 
 python3 train.py \
-    --data_name hyperbolic_paraboloid \
+    --data_name xy_plane_rotated \
     --save_step 5000 \
     --device cuda \
     --epochs 100000 \
