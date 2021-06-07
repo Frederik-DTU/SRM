@@ -36,13 +36,16 @@ class rm_geometry:
         self.bc_y0 = None
         self.bc_yT = None
         self.parallel_transport_geodesic = None
+        self.v_parallel_transport_geodesic = None
         self.time_grid = None
+        self.jacobian = None
         
     def compute_mmf(self, param_fun, x_sym):
         #compute metric matrix function via parametrization
         jacobian = param_fun.jacobian(x_sym)
         G = (jacobian.T)*jacobian
         
+        self.jacobian = jacobian
         self.G = G
         self.x = x_sym
         self.dim = len(x_sym)
@@ -100,7 +103,10 @@ class rm_geometry:
                         self.__geodesic_equation_bc, 
                         x_mesh, y_init_grid)
         
-        return sol.y[0:self.dim]
+        y = sol.y[0:self.dim]
+        v = sol.y[self.dim:]
+        
+        return y, v
     
     def ivp_geodesic(self, n_grid, y_init):
         
@@ -241,13 +247,24 @@ class rm_geometry:
         
         return v
     
+    def get_tangent_vector(self, y0, v0):
+        
+        sub = [(self.x[i], y0[i]) for i in range(len(self.x))]
+        jacobian = (self.jacobian).subs(sub)
+        jacobian = np.array(jacobian)
+        
+        u0 = v0.dot(jacobian)
+        
+        return u0
+    
     def parallel_transport_along_geodesic(self, y0, yT, v0, n_grid):
         
         y_init_grid = np.zeros((2*self.dim , n_grid))
         sol = self.__bvp_geodesic(y0, yT, n_grid, y_init_grid)
-        gamma_geodesic = sol.y[0:self.dim]
+        gamma_geodesic = sol.y[0:self.dim].transpose()
+        v_geodesic = sol.y[self.dim:(2*self.dim)].transpose()
         
-        n_grid = gamma_geodesic.shape[1]
+        n_grid = gamma_geodesic.shape[0]
         
         christoffel = self.get_christoffel_symbols()
         g_func = sym.lambdify(self.x, christoffel, modules='numpy')
@@ -256,6 +273,7 @@ class rm_geometry:
         
         self.time_grid = x_mesh
         self.parallel_transport_geodesic = gamma_geodesic
+        self.v_parallel_transport_geodesic = v_geodesic
         sol = solve_ivp(self.__parallel_transport_geodesic_equation_fun, [0,1], v0, t_eval=x_mesh)
         
         return sol.y
@@ -298,20 +316,20 @@ class rm_geometry:
     
     def __parallel_transport_geodesic_equation_fun(self, t, y):
         
-
+        
         gamma = self.parallel_transport_geodesic
+        v_gamma = self.v_parallel_transport_geodesic
         t_idx = np.abs(self.time_grid - t).argmin()
-        v = y
-        dv = y
-        chris = np.array(self.christoffel(*gamma[:,t_idx]), dtype=object)
+        dv = np.zeros(self.dim)
+        chris = np.array(self.christoffel(*gamma[t_idx,:]), dtype=object)
         
         for k in range(self.dim):
             val = 0.0
             for i in range(self.dim):
                 for j in range(self.dim):
-                    val += v[j]*gamma[i,t_idx]*chris[i][j][k]
+                    val += y[j]*v_gamma[t_idx,i]*chris[i][j][k]
             dv[k] = -val
-    
+        
         return dv
 
 #%% Testing the above class                
@@ -653,7 +671,7 @@ class rm_data:
         Z[-1] = zT.squeeze()
         G[-1] = xT.squeeze()
         
-        return Z, G
+        return Z, G, ui
     
     def linear_parallel_translation(self, za, zb, zc, T=10):
         

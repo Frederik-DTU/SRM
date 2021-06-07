@@ -39,14 +39,14 @@ from rm_computations import rm_geometry
 
 def fun(x1, x2):
     
-    return x1, x2, x1**2-x2**2
+    return x1, x2, x1**2+x2**2
 
 x1, x2 = sym.symbols('x1 x2')
 x = sym.Matrix([x1, x2])
-param_fun = sym.Matrix([x1, x2, x1**2-x2**2])
+param_fun = sym.Matrix([x1, x2, x1**2+x2**2])
 
 #Data
-data_name = 'hyperbolic_paraboloid'
+data_name = 'paraboloid'
 
 #%% Loading data and model
 
@@ -143,7 +143,8 @@ L_geodesic = checkpoint['L_geodesic']
 zx = np.array([-3.0,-3.0])
 zy = np.array([3.0,-3.0])
 y_init = np.zeros((4, 100))
-z_true_geodesic = rm.bvp_geodesic(zx, zy, 100, y_init).transpose()
+z_true_geodesic, _ = rm.bvp_geodesic(zx, zy, 100, y_init)
+z_true_geodesic = z_true_geodesic.transpose()
 g1, g2, g3 = fun(z_true_geodesic[:,0], z_true_geodesic[:,1])
 g_true_geodesic = np.vstack((g1,g2,g3)).transpose()
 L_true = rm.arc_length(g_true_geodesic)
@@ -213,24 +214,39 @@ data_plot.plot_geodesic_in_X_3d(fun, #points.detach().numpy(),
                           [gac_geodesic, 'Approximated Geodesic (L=%.4f)'%L_geodesic],
                           [gc_geodesic, 'True Geodesic (L=%.4f)'%L_true])
 
-za = np.array([-3.0,-3.0])
-zb = np.array([3.0,-3.0])
-zc = np.array([-3.0,3.0])
+za = np.array([checkpoint['a'][0],checkpoint['a'][1]])
+zb = np.array([checkpoint['b'][0],checkpoint['b'][1]])
+zc = np.array([checkpoint['c'][0],checkpoint['c'][1]])
 y_init = np.zeros((4, 100))
-z_ab = rm.bvp_geodesic(za, zb, 100, y_init).transpose()
+z_ab, v_ab = rm.bvp_geodesic(za, zb, 100, y_init)
+z_ab, v_ab = z_ab.transpose(), v_ab.transpose()
 g1, g2, g3 = fun(z_ab[:,0], z_ab[:,1])
 g_ab = np.vstack((g1,g2,g3)).transpose()
 
 y_init = np.zeros((4, 100))
-z_ac = rm.bvp_geodesic(za, zc, 100, y_init).transpose()
+z_ac, _ = rm.bvp_geodesic(za, zc, 100, y_init)
+z_ac = z_ac.transpose()
 g1, g2, g3 = fun(z_ac[:,0], z_ac[:,1])
 g_ac = np.vstack((g1,g2,g3)).transpose()
 
+#v0 = (g_ab[1]-g_ab[0])*g_ab.shape[0]
+#u0 = rm.get_tangent_vector(g_ab[0], v0)
+u0 = v_ab[0,:]
+
+
+v_c = rm.parallel_transport_along_geodesic(za, zc, u0, 100)
+v_c = v_c[:,-1]
+
+y_init = list(zc)+list(v_c)
+z_vc = rm.ivp_geodesic(100, y_init).transpose()
+g1, g2, g3 = fun(z_vc[:,0], z_vc[:,1])
+g_vc = np.vstack((g1,g2,g3)).transpose()
 
 data_plot.plot_geodesic_in_X_3d(fun, #points.detach().numpy(),
                           [-4,4],[-4,4],
-                          [g_ab, 'Interpolation (L=%.4f)'%L_linear], 
-                          [g_ac, 'Approximated Geodesic (L=%.4f)'%L_geodesic])
+                          [g_ab, 'True (L=%.4f)'%L_linear], 
+                          [g_ac, 'True Geodesic (L=%.4f)'%L_geodesic],
+                          [g_vc, 'True vc (L=%.4f)'%L_geodesic])
 
 
     

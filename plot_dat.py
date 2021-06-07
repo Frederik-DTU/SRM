@@ -190,6 +190,7 @@ class plot_3d_fun(object):
         
         plt.figure(figsize=self.fig_size)
         ax = plt.axes(projection="3d")
+        low_val = 1
         
         x1_grid = np.linspace(x1_grid[0], x1_grid[1], num = self.N)
         x2_grid = np.linspace(x2_grid[0], x2_grid[1], num = self.N)
@@ -205,10 +206,16 @@ class plot_3d_fun(object):
             y = arg[0][:,1]
             z = arg[0][:,2]
             ax.plot(x, y, z, label=lab)
+            if np.max(z)>1e-3:
+                low_val = 0
 
         ax.set_xlabel('x')
         ax.set_ylabel('y')
         ax.set_zlabel('z')
+        
+        if low_val:
+            ax.set_zlim(-2, 2)
+        
         ax.legend()
                 
         plt.tight_layout()
@@ -323,6 +330,9 @@ class plot_3d_fun(object):
         ax.set_ylabel('y')
         ax.set_zlabel('z')
         
+        if np.max(x3)<1e-3:
+            ax.set_zlim(-2, 2)
+        
         plt.tight_layout()
         
         plt.show()
@@ -344,6 +354,9 @@ class plot_3d_fun(object):
         ax.set_ylabel('y')
         ax.set_zlabel('z')
         ax.set_title(title)
+        
+        if np.max(x3)<1e-3:
+            ax.set_zlim(-2, 2)
                 
         ax.scatter3D(x1, x2, x3, color='black')
                 

@@ -96,9 +96,9 @@ def main():
     model.eval()
     
     #Latent coordinates
-    za = (torch.tensor([-3,-3])).float()
-    zb = (torch.tensor([3,-3])).float()
-    zc = (torch.tensor([-3,3])).float()
+    za = (torch.tensor([-3.0,-3.0])).float()
+    zb = (torch.tensor([3.0,-3.0])).float()
+    zc = (torch.tensor([-3.0,3.0])).float()
     
     #Coordinates on the manifold
     a = (torch.tensor(fun(za[0],za[1]))).float()
@@ -116,12 +116,13 @@ def main():
     zc_linear, gc_linear = rm.linear_parallel_translation(ha, hb, hc, T=args.T)
     va_z, va_g, zab_geodesic, gab_geodesic = rm.Log_map(ha, hb, epochs=args.epochs, 
                                                   T = args.T)
+    
     z_init = rm.interpolate(ha, hc, T = args.T)
     _, z_ac = rm.compute_geodesic(z_init, epochs=args.epochs)
     g_ac = model.g(z_ac)
     
     vac_z, vac_g = rm.parallel_translation_al2(z_ac, va_z)
-    zc_geodesic, gc_geodesic = rm.geodesic_shooting_al3(hc, vac_g, T = args.T)
+    zc_geodesic, gc_geodesic, uT = rm.geodesic_shooting_al3(hc, vac_g, T = args.T)
     
     torch.save({'va_z': va_z,
                 'va_g': va_g,
@@ -137,7 +138,8 @@ def main():
                 'gc_linear': gc_linear,
                 'a': a,
                 'b': b,
-                'c': c}, 
+                'c': c,
+                'uT': uT}, 
                save_path)
 
     return
