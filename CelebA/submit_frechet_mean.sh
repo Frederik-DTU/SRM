@@ -17,12 +17,12 @@ module swap cuda/8.0
 module swap cudnn/v7.0-prod-cuda8
 
 python3 rm_frechet_mean.py \
-    --data_path Data_groups/group_blond_open/ \
-    --save_path rm_computations/frechet_group_blond_open.pt \
+    --data_path Data_groups/group_black_open/ \
+    --save_path rm_computations/frechet_group_black_open.pt \
     --device cpu \
-    --epochs 100000 \
+    --epochs 10000 \
     --T 10 \
-    --batch_size 100 \
+    --batch_size 10 \
     --lr 0.0002 \
     --size 64 \
     --load_model_path trained_models/main/celeba_epoch_6300.pt

@@ -24,9 +24,9 @@ python3 rm_distance_matrix.py \
     --group3 Data_groups/group_black_closed/ \
     --group4 Data_groups/group_black_open/ \
     --device cpu \
-    --epochs 100000 \
-    --T 100 \
-    --batch_size 100 \
+    --epochs 10000 \
+    --T 10 \
+    --batch_size 10 \
     --lr 0.0001 \
     --size 64 \
     --load_model_path trained_models/main/celeba_epoch_6300.pt
