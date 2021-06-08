@@ -40,21 +40,21 @@ from VAE_surface3d import VAE_3d
 def parse_args():
     parser = argparse.ArgumentParser()
     # File-paths
-    parser.add_argument('--data_name', default='hyperbolic_paraboloid', 
+    parser.add_argument('--data_name', default='paraboloid', 
                         type=str)
 
     #Hyper-parameters
     parser.add_argument('--device', default='cpu', #'cuda:0'
                         type=str)
-    parser.add_argument('--epochs', default=100000,
+    parser.add_argument('--epochs', default=100,
                         type=int)
     parser.add_argument('--T', default=100,
                         type=int)
-    parser.add_argument('--batch_size', default=100,
+    parser.add_argument('--batch_size', default=10,
                         type=int)
     parser.add_argument('--lr', default=0.0001,
                         type=float)
-    parser.add_argument('--save_step', default=100,
+    parser.add_argument('--save_step', default=1,
                         type=int)
 
     #Continue training or not
@@ -101,8 +101,9 @@ def main():
     
     loss, muz_geodesic = rm.compute_frechet_mean(Z, muz_linear, epochs_geodesic=100000,
                                                  epochs_frechet=args.epochs,
-                                                 print_com = False,
-                                                 save_step=args.save_step)
+                                                 print_com = True,
+                                                 save_step=args.save_step,
+                                                 frechet_lr = 1e-3)
     mug_geodesic = model.g(muz_geodesic)
     
     torch.save({'loss': loss,

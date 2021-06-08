@@ -47,11 +47,11 @@ def parse_args():
     #Hyper-parameters
     parser.add_argument('--device', default='cpu', #'cuda:0'
                         type=str)
-    parser.add_argument('--epochs', default=100000,
+    parser.add_argument('--epochs', default=10000,
                         type=int)
     parser.add_argument('--T', default=10,
                         type=int)
-    parser.add_argument('--batch_size', default=100,
+    parser.add_argument('--batch_size', default=10,
                         type=int)
     parser.add_argument('--lr', default=0.0002,
                         type=float)
@@ -104,8 +104,8 @@ def main():
     
     muz_linear, mug_linear = rm.compute_euclidean_mean(Z)
     loss, muz_geodesic = rm.compute_frechet_mean(Z, muz_linear, T = args.T,
-                                                 epochs_geodesic = args.epochs,
-                                                 epochs_frechet = args.epochs)
+                                                 epochs_geodesic = 10000,
+                                                 epochs_frechet = 100)
     mug_geodesic = model.g(muz_geodesic)
     
     torch.save({'loss': loss,

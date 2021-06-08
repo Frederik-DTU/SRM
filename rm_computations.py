@@ -304,6 +304,7 @@ class rm_geometry:
         dmat = np.zeros((N, N))
         
         for i in range(0, N):
+            print(f"Column {i} is being computed...")
             for j in range(i+1,N):
                 z_geodesic = self.bvp_geodesic(Z[i], Z[j], n_grid, y_init_grid)
                 g_geodesic = fun(z_geodesic)
@@ -469,11 +470,13 @@ class rm_data:
         dmat = torch.zeros(N, N)
         
         for i in range(0, N):
+            print(f"Computing row {i+1}/{N}...")
             for j in range(i+1,N):
+                print(j)
                 Z_int = self.interpolate(Z[i], Z[j], T)
                 _, geodesic_z = self.compute_geodesic(Z_int, 
                                                       epochs = epochs,
-                                                      lr = 1e-4,
+                                                      lr = 1e-3,
                                                       print_com = False)
                 L = self.arc_length(self.model_decoder(geodesic_z))
                 
@@ -564,8 +567,8 @@ class rm_data:
     
     def compute_frechet_mean(self, X, mu_init, T=100, 
                               epochs_geodesic = 100000, epochs_frechet = 100000,
-                              geodesic_lr = 1e-4, frechet_lr = 1e-4,
-                              print_com = True, save_step = 100,
+                              geodesic_lr = 1e-3, frechet_lr = 1e-3,
+                              print_com = True, save_step = 1,
                               eps=1e-6):
         
         mu_init = mu_init.clone().detach().requires_grad_(True)
@@ -634,7 +637,7 @@ class rm_data:
     
     def geodesic_shooting_al3(self, z0, u0, T=10):
         
-        delta = 1/T
+        delta = 1/T #1/T
         x0 = self.model_decoder(z0)
         shape = x0.shape
         zdim = [T+1]

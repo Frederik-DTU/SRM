@@ -40,7 +40,7 @@ def parse_args():
     # File-paths
     parser.add_argument('--data_path', default="../../Data/CelebA/celeba", 
                         type=str)
-    parser.add_argument('--save_path', default='rm_computations/simple_geodesic.pt', 
+    parser.add_argument('--save_path', default='rm_computations/simple_geodesic', 
                         type=str)
 
     #Hyper-parameters
@@ -121,11 +121,12 @@ def main():
         arc_length = ['{0:.4f}'.format(L_linear), '{0:.4f}'.format(L_geodesic)]
         tick_list = [img_height/2, img_height/2+img_height]
         
+        save_path = args.save_path+str(i+1)+'.pt'
         torch.save({'G_plot': G_plot,
                     'arc_length': arc_length,
                     'tick_list': tick_list,
                     'T': args.T}, 
-                   args.save_path)
+                   save_path)
 
     return
 

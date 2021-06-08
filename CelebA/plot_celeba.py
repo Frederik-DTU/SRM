@@ -95,8 +95,8 @@ data_plot.plot_loss(kld_loss, title='KLD')
 
 #%% Plotting simple geodesics
 
-load_path = 'rm_computations/simple_geodesic/'
-names = ['geodesic1.pt', 'geodesic2.pt', 'geodesic3.pt']
+load_path = 'rm_computations/'
+names = ['simple_geodesic1.pt', 'simple_geodesic2.pt', 'simple_geodesic3.pt']
 fig, ax = plt.subplots(3,1, figsize=(8,6))
 ax[0].set_title("Geodesic cuves and Linear interpolation between images")
 for i in range(len(names)):
@@ -111,8 +111,8 @@ for i in range(len(names)):
     ax[i].imshow(vutils.make_grid(G_plot, padding=2, normalize=True, nrow=T+1).permute(1, 2, 0))
     ax[i].axes.get_xaxis().set_visible(False)
     ax[i].set_yticks(tick_list)
-    ax[i].set_yticklabels(arc_length)
-    
+    ax[i].set_yticklabels(arc_length) 
+
 #%% Plotting Frechet mean for group
 
 data_path = 'Data_groups/group_blond_closed/'

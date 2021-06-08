@@ -39,14 +39,14 @@ from VAE_surface3d import VAE_3d
 
 def fun(x1, x2):
     
-    return x1, x2, x1**2-x2**2
+    return x1, x2, x1*0
 
 #%% Parser for command line arguments
 
 def parse_args():
     parser = argparse.ArgumentParser()
     # File-paths
-    parser.add_argument('--data_name', default='hyperbolic_paraboloid', 
+    parser.add_argument('--data_name', default='xy_plane', 
                         type=str)
 
     #Hyper-parameters
@@ -54,7 +54,7 @@ def parse_args():
                         type=str)
     parser.add_argument('--epochs', default=100000,
                         type=int)
-    parser.add_argument('--T', default=100,
+    parser.add_argument('--T', default=10,
                         type=int)
     parser.add_argument('--batch_size', default=100,
                         type=int)
@@ -122,6 +122,7 @@ def main():
     g_ac = model.g(z_ac)
     
     vac_z, vac_g = rm.parallel_translation_al2(z_ac, va_z)
+    
     zc_geodesic, gc_geodesic, uT = rm.geodesic_shooting_al3(hc, vac_g, T = args.T)
     
     torch.save({'va_z': va_z,

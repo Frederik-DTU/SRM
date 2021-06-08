@@ -33,7 +33,7 @@ import sympy as sym
 #Own files
 from plot_dat import plot_3d_fun
 from VAE_surface3d import VAE_3d
-from rm_computations import rm_geometry
+from rm_computations import rm_geometry, rm_data
 
 #%% Function for plotting
 
@@ -193,6 +193,8 @@ data_plot.plot_mean_in_Z2d(Z.detach().numpy(), [muz_linear.detach().numpy(), 'Li
 
 #%% Plot Parallel Translation
 
+rm_rec = rm_data(model.h, model.g, 'cpu')
+
 load_path = 'rm_computations/'+data_name+'/parallel_transport.pt'
 checkpoint = torch.load(load_path, map_location=device)
 zab_geodesic = checkpoint['zab_geodesic'].detach().numpy()
@@ -208,11 +210,15 @@ L_linear = 0
 L_geodesic = 0
 L_true = 0
 
+Lab_geodesic = rm_rec.arc_length(checkpoint['gab_geodesic'])
+Lac_geodesic = rm_rec.arc_length(checkpoint['gac_geodesic'])
+Lc_geodesic = rm_rec.arc_length(checkpoint['gc_geodesic'])
+
 data_plot.plot_geodesic_in_X_3d(fun, #points.detach().numpy(),
                           [-4,4],[-4,4],
-                          [gab_geodesic, 'Interpolation (L=%.4f)'%L_linear], 
-                          [gac_geodesic, 'Approximated Geodesic (L=%.4f)'%L_geodesic],
-                          [gc_geodesic, 'True Geodesic (L=%.4f)'%L_true])
+                          [gab_geodesic, 'Geodesic from a-b (L=%.4f)'%Lab_geodesic], 
+                          [gac_geodesic, 'Geodesic from a-c (L=%.4f)'%Lac_geodesic],
+                          [gc_geodesic, 'Geodesic from c (L=%.4f)'%Lc_geodesic])
 
 za = np.array([checkpoint['a'][0],checkpoint['a'][1]])
 zb = np.array([checkpoint['b'][0],checkpoint['b'][1]])
@@ -242,11 +248,17 @@ z_vc = rm.ivp_geodesic(100, y_init).transpose()
 g1, g2, g3 = fun(z_vc[:,0], z_vc[:,1])
 g_vc = np.vstack((g1,g2,g3)).transpose()
 
+L_ab = rm.arc_length(g_ab)
+L_ac = rm.arc_length(g_ac)
+L_c = rm.arc_length(g_vc)
+
 data_plot.plot_geodesic_in_X_3d(fun, #points.detach().numpy(),
                           [-4,4],[-4,4],
-                          [g_ab, 'True (L=%.4f)'%L_linear], 
-                          [g_ac, 'True Geodesic (L=%.4f)'%L_geodesic],
-                          [g_vc, 'True vc (L=%.4f)'%L_geodesic])
+                          [g_ab, 'Geodesic from a-b (L=%.4f)'%L_ab], 
+                          [g_ac, 'Geodesic from a-c (L=%.4f)'%L_ac],
+                          [g_vc, 'Geodesic from c (L=%.4f)'%L_c])
+
+data_plot.plot_geodesic_in_Z_2d([zc_geodesic, 'Geodesic from c in Z'])
 
 
     
