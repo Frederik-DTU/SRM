@@ -79,7 +79,7 @@ def main():
     #paths
     data_path = 'Data/'+args.data_name+'.csv'
     load_path = 'trained_models/'+args.data_name+'/'+args.data_name+'_epoch_'+args.load_epoch
-    save_path = 'trained_models/'+args.data_name+'/'+args.data_name+'_epoch_'
+    save_path = 'trained_models/main/'+args.data_name+'_epoch_'
 
     df = pd.read_csv(data_path, index_col=0)
     DATA = torch.Tensor(df.values).to(args.device) #DATA = torch.Tensor(df.values)
