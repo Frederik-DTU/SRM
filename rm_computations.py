@@ -464,6 +464,23 @@ class rm_data:
         
         return v_z, v_g, z_geodesic, g_geodesic
     
+    def linear_distance_matrix(self, Z, T=100):
+        
+        N = Z.shape[0]
+        dmat = torch.zeros(N, N)
+        
+        for i in range(0, N):
+            print(f"Computing row {i+1}/{N}...")
+            for j in range(i+1,N):
+                print(j)
+                z_linear = self.interpolate(Z[i], Z[j], T)
+                L = self.arc_length(self.model_decoder(z_linear))
+                
+                dmat[i][j] = L.item()
+                dmat[j][i] = L.item()
+                
+        return dmat
+    
     def geodesic_distance_matrix(self, Z, epochs = 100000, lr = 1e-4, T=100):
         
         N = Z.shape[0]
@@ -679,15 +696,15 @@ class rm_data:
     def linear_parallel_translation(self, za, zb, zc, T=10):
         
         shape = [T+1]+list(za.squeeze().shape)
-        geodesic_z = torch.zeros(shape)
-        v = za-zb
+        z_linear = torch.zeros(shape)
+        v = zb-za
         step = torch.linspace(0,1,T+1)
         for i in range(T+1):
-            geodesic_z[i] = zc+step[i]*v
+            z_linear[i] = zc+step[i]*v
             
-        geodesic_g = self.model_decoder(geodesic_z)
+        g_linear = self.model_decoder(z_linear)
         
-        return geodesic_z, geodesic_g
+        return z_linear, g_linear
         
         
     def get_jacobian(self, net_fun, x, n_out):
@@ -786,7 +803,7 @@ class frechet_mean(nn.Module):
             gT = self.model_decoder(dat.view(1,-1)).detach()
             geodesic_z = self.rm.compute_geodesic_fast(z_init, epochs=self.epochs, lr = self.lr)
             geodesic_g = self.model_decoder(geodesic_z).detach()
-            L += self.rm.arc_length(geodesic_g, g0, gT)
+            L += self.rm.arc_length(geodesic_g, g0, gT)**2
         
         return L
         

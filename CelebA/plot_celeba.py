@@ -10,6 +10,10 @@ Created on Fri Mar  5 00:07:44 2021
 """
 Sources:
 https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html
+http://seaborn.pydata.org/generated/seaborn.jointplot.html
+https://scikit-learn.org/stable/modules/generated/sklearn.manifold.MDS.html
+https://scikit-learn.org/stable/modules/manifold.html#multi-dimensional-scaling-mds
+https://www.geeksforgeeks.org/scatter-plot-with-marginal-histograms-in-python-with-seaborn/
 """
 
 #%% Modules
@@ -28,10 +32,13 @@ import matplotlib.pyplot as plt
 import torchvision.utils as vutils
 import numpy as np
 import pandas as pd
+from sklearn.manifold import MDS
+import seaborn as sns
 
 #Own files
 from VAE_celeba import VAE_CELEBA
 from plot_dat import plot_3d_fun
+from rm_computations import rm_data
 
 #%% Loading data and model
 
@@ -115,8 +122,8 @@ for i in range(len(names)):
 
 #%% Plotting Frechet mean for group
 
-data_path = 'Data_groups/group_blond_closed/'
-frechet_path = 'rm_computations/frechet_mean/group_blond_closed.pt'
+data_path = 'Data_groups/group_blond_open/'
+frechet_path = 'rm_computations/frechet_group_blond_open.pt'
 img_size = 64
 
 dataset = dset.ImageFolder(root=data_path,
@@ -151,17 +158,100 @@ plt.show()
 frechet = torch.load(frechet_path)
 mug_linear = frechet['mug_linear'].view(3,img_size,img_size).detach()
 mug_geodesic = frechet['mug_geodesic'].view(3,img_size,img_size).detach()
+loss = frechet['loss']
 
 plt.figure(figsize=(8,6))
 plt.subplot(1,2,1)
 plt.axis("off")
-plt.title("Linear mean")
+plt.title("Linear mean (L_sum=%.4f)"%loss[0])
 plt.imshow(mug_linear.permute(1, 2, 0))
 
 # Plot some training images
 plt.subplot(1,2,2)
 plt.axis("off")
-plt.title("Frechet mean")
+plt.title("Frechet mean (L_sum=%.4f)"%loss[-1])
 plt.imshow(mug_geodesic.permute(1, 2, 0))
 plt.show()
 
+#%% Plotting Parallel Transport
+
+rm = rm_data(model.h, model.g, 'cpu')
+
+load_path = 'rm_computations/black_parallel_translation.pt'
+checkpoint = torch.load(load_path)
+T = checkpoint['T']
+gab_geodesic = checkpoint['gab_geodesic']
+gac_geodesic = checkpoint['g_ac']
+gc_geodesic = checkpoint['gc_geodesic']
+zc_linear = checkpoint['zc_linear']
+gc_linear = checkpoint['gc_linear']
+
+L_ab = rm.arc_length(gab_geodesic)
+L_ac = rm.arc_length(gac_geodesic)
+L_c = rm.arc_length(gc_geodesic)
+L_linear_c = rm.arc_length(gc_linear)
+arc_length = ['a-b: {0:.4f}'.format(L_ab), 'a-c: {0:.4f}'.format(L_ac),
+              'c_g: {0:.4f}'.format(L_c), 'c_l: {0:.4f}'.format(L_linear_c)]
+tick_list = [64/2, 64/2+64, 64/2+64*2,64/2+64*3]
+
+G_plot = torch.cat((gab_geodesic.detach(), gac_geodesic.detach(), 
+                    gc_geodesic.detach(), gc_linear.detach()), dim = 0)
+
+fig, ax = plt.subplots(1,1, figsize=(8,6))
+ax.set_title("Geodesic cuves and Linear interpolation between images")    
+    
+ax.imshow(vutils.make_grid(G_plot, padding=2, normalize=True, nrow=T+1).permute(1, 2, 0))
+ax.axes.get_xaxis().set_visible(False)
+ax.set_yticks(tick_list)
+ax.set_yticklabels(arc_length) 
+
+#%% distance matrix
+rm = rm_data(model.h, model.g, 'cpu')
+
+load_path = 'rm_computations/dmat.pt'
+checkpoint = torch.load(load_path)
+x_batch = (checkpoint['x_batch'].view(checkpoint['x_batch'].shape[0],-1)).detach().numpy()
+z_batch = checkpoint['z_batch'].detach().numpy()
+dmat = checkpoint['dmat'].detach().numpy()
+X_names = checkpoint['X_names']
+dmat_linear = rm.linear_distance_matrix(z_batch, 10).detach().numpy()
+
+X_names = ['Blond Hair+Mouth Closed', 'Blond Hair+Mouth Open', 
+           'Black Hair+Mouth Closed', 'Black Hair+Mouth Open']
+
+embedding = MDS(n_components=2, dissimilarity = 'precomputed')
+x2d_linear = embedding.fit_transform(dmat_linear)
+x2d_geodesic = embedding.fit_transform(dmat)
+embedding = MDS(n_components=2)
+x2d_euclidean = embedding.fit_transform(x_batch)
+
+data_size = int(x2d_euclidean.shape[0]/len(X_names))
+
+column_names = ['group', 'x1', 'x2']
+df = pd.DataFrame(index=range(x2d_euclidean.shape[0]), columns=column_names)
+
+group = [item for item in X_names for i in range(data_size)]
+df['group'] = group
+df['x1'] = x2d_geodesic[:,0]
+df['x2'] = x2d_geodesic[:,1]
+  
+p = sns.jointplot(data=df, x="x1", y="x2", hue="group")
+p.fig.suptitle("Geodesic Distances")
+p.fig.tight_layout()
+p.fig.subplots_adjust(top=0.95) # Reduce plot to make room 
+
+df['x1'] = x2d_linear[:,0]
+df['x2'] = x2d_linear[:,1]
+  
+p = sns.jointplot(data=df, x="x1", y="x2", hue="group")
+p.fig.suptitle("Linear Distances")
+p.fig.tight_layout()
+p.fig.subplots_adjust(top=0.95) # Reduce plot to make room 
+
+df['x1'] = x2d_euclidean[:,0]
+df['x2'] = x2d_euclidean[:,1]
+  
+p = sns.jointplot(data=df, x="x1", y="x2", hue="group")
+p.fig.suptitle("Euclidean Distances")
+p.fig.tight_layout()
+p.fig.subplots_adjust(top=0.95) # Reduce plot to make room 

@@ -42,11 +42,11 @@ def parse_args():
     # File-paths
     parser.add_argument('--data_path', default="../../Data/CelebA/celeba", 
                         type=str)
-    parser.add_argument('--save_path', default='rm_computations/parallel_translation.pt', 
+    parser.add_argument('--save_path', default='rm_computations/black_parallel_translation.pt', 
                         type=str)
-    parser.add_argument('--group_one', default='Data_groups/group_blond_closed/', 
+    parser.add_argument('--group_one', default='Data_groups/group_black_closed/', 
                         type=str)
-    parser.add_argument('--group_two', default='Data_groups/group_blond_open/', 
+    parser.add_argument('--group_two', default='Data_groups/group_black_open/', 
                         type=str)
 
     #Hyper-parameters
@@ -128,7 +128,7 @@ def main():
     g_ac = model.g(z_ac)
     
     vac_z, vac_g = rm.parallel_translation_al2(z_ac, va_z)
-    zc_geodesic, gc_geodesic = rm.geodesic_shooting_al3(z_c, vac_g, T = args.T)
+    zc_geodesic, gc_geodesic, uT = rm.geodesic_shooting_al3(z_c, vac_g, T = args.T)
     
     torch.save({'T': args.T,
                 'va_z': va_z,

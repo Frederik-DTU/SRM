@@ -34,7 +34,7 @@ import argparse
 pi = math.pi
 
 #Own files
-from rm_com import riemannian_data
+from rm_computations import rm_data
 from VAE_surface3d import VAE_3d
 
 #%% Fun
@@ -54,7 +54,7 @@ def parse_args():
     # File-paths
     parser.add_argument('--data_path', default='Data/circle.csv', 
                         type=str)
-    parser.add_argument('--save_path', default='rm_computations/simple_geodesic/', 
+    parser.add_argument('--save_path', default='rm_computations/simple_geodesic_2/', 
                         type=str)
     parser.add_argument('--names', default=['pi_2', 'pi', '5pi_4'],
                         type=list)
@@ -66,7 +66,7 @@ def parse_args():
                         type=int)
     parser.add_argument('--eps', default=0.1,
                         type=int)
-    parser.add_argument('--T', default=1000,
+    parser.add_argument('--T', default=100,
                         type=int)
     parser.add_argument('--alpha', default=1,
                         type=float)
@@ -74,7 +74,7 @@ def parse_args():
                         type=float)
 
     #Continue training or not
-    parser.add_argument('--load_model_path', default='trained_models/main/circle_epoch_100000.pt',
+    parser.add_argument('--load_model_path', default='trained_models/latent_dim_2/circle_epoch_40000.pt',
                         type=str)
 
 
@@ -89,7 +89,7 @@ def main():
     args = parse_args()
 
     #Hyper-parameters
-    latent_dim = 1
+    latent_dim = 2
     
     #Loading files
     
@@ -125,30 +125,32 @@ def main():
     y = (torch.tensor(circle_fun(zy))).float()
     
     #Mean of approximate posterier
-    hy = model.h(y)[0]
+    hy = model.h(y)
     gy = model.g(hy)
     
     #Loading module
-    rm = riemannian_data(model.h, model.g, T=args.T, 
-                         eps = args.eps, MAX_ITER=args.MAX_ITER)
+    rm = rm_data(model.h, model.g, args.device)
         
     for i in range(len(args.names)):
         
         z = zx[i]
         x = (torch.tensor(circle_fun(z))).float()
-        hx = model.h(x)[0]
+        hx = model.h(x)
         gx = model.g(hx)
         
-        gamma_linear = rm.interpolate(hx, hy)
-        gamma_geodesic = rm.geodesic_path_al1(gamma_linear, alpha = args.alpha)
+        gamma_linear = rm.interpolate(hx, hy, args.T)
+        g_linear = model.g(gamma_linear)
+        loss, z_geodesic = rm.compute_geodesic(gamma_linear, 100000)
+        g_geodesic = model.g(z_geodesic)
+        L_geodesic = rm.arc_length(g_geodesic)
+        L_linear = rm.arc_length(g_linear)
         
         checkpoint = args.save_path+args.names[i]+'.pt'
-        torch.save({'loss': gamma_geodesic[0],
-                    'E_fun': gamma_geodesic[1],
-                    'G_old': gamma_geodesic[3],
-                    'G_new': gamma_geodesic[4],
-                    'L_old': gamma_geodesic[5].item(),
-                    'L_new': gamma_geodesic[6].item(),
+        torch.save({'loss': loss,
+                    'G_old': g_linear,
+                    'G_new': g_geodesic,
+                    'L_old': L_linear.item(),
+                    'L_new': L_geodesic.item(),
                     'gx': gx,
                     'gy': gy}, 
                    checkpoint)
