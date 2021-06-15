@@ -47,7 +47,7 @@ def x3_sphere(x1, x2):
 #%% Loading data and model
 
 #Hyper-parameters
-epoch_load = '100000'
+epoch_load = '40000'
 lr = 0.0001
 device = 'cpu'
 
@@ -57,7 +57,7 @@ fun = x3_sphere
 
 #Loading files
 data_path = 'Data/'+data_name+'.csv'
-file_model_save = 'trained_models/main2/'+data_name+'_epoch_'+epoch_load+'.pt'
+file_model_save = 'trained_models/main/'+data_name+'_epoch_'+epoch_load+'.pt'
 data_plot = plot_3d_fun(N=100)
 
 #Loading data
