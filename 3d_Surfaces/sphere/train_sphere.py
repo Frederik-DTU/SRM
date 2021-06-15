@@ -97,8 +97,8 @@ def main():
 
     model = VAE_3d(fc_h = [3, 50, 100, 50],
                  fc_g = [2, 50, 100, 50, 3],
-                 fc_mu = [100, 2],
-                 fc_var = [100, 2],
+                 fc_mu = [50, 2],
+                 fc_var = [50, 2],
                  fc_h_act = [nn.ELU, nn.ELU, nn.ELU],
                  fc_g_act = [nn.ELU, nn.ELU, nn.ELU, nn.Identity],
                  fc_mu_act = [nn.Identity],
