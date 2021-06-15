@@ -34,26 +34,21 @@ name_path = 'Data/sphere.csv' #Path/file_name
 
 def x1_fun(N, mu = 0, std = 1):
     
-    x1 = np.linspace(-3, 3, N)
+    theta = np.linspace(0, 2*np.pi, N)
     #x1 = np.random.normal(mu, std, N)
     
-    return x1
+    return theta
 
 def x2_fun(N, mu = 0, std = 1):
     
-    x2 = np.random.normal(-3, 3, N)
+    phi = np.linspace(0, np.pi, N)
     #x2 = np.random.normal(mu, std, N)
     
-    return x2
+    return phi
     
 def x3_fun(x1, x2):
-    
-    N = len(x1)
-    x3 = np.random.normal(0, 1, N)
-    
-    r = np.sqrt(x1**2+x2**2+x3**2)
-    
-    return x1/r, x2/r, x3/r
+        
+    return np.cos(x1)*np.sin(x2), np.sin(x1)*np.sin(x2), np.cos(x1)
 
 sim = sim_3d_fun(x1_fun = x1_fun,
                  x2_fun = x2_fun, 
