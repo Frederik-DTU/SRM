@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "train_sphere.py", line 174, in <module>
+    main()
+  File "train_sphere.py", line 131, in main
+    _, x_hat, mu, var, kld, rec_loss, elbo = model(x)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/torch/nn/modules/module.py", line 727, in _call_impl
+    result = self.forward(*input, **kwargs)
+  File "/zhome/77/8/118225/Desktop/SRM/Github/SRM/VAE_surface3d.py", line 142, in forward
+    mu, var = self.mu_net(x_encoded), self.var_net(x_encoded)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/torch/nn/modules/module.py", line 727, in _call_impl
+    result = self.forward(*input, **kwargs)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/torch/nn/modules/container.py", line 117, in forward
+    input = module(input)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/torch/nn/modules/module.py", line 727, in _call_impl
+    result = self.forward(*input, **kwargs)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/torch/nn/modules/linear.py", line 93, in forward
+    return F.linear(input, self.weight, self.bias)
+  File "/zhome/77/8/118225/.local/lib/python3.8/site-packages/torch/nn/functional.py", line 1690, in linear
+    ret = torch.addmm(bias, input, weight.t())
+RuntimeError: mat1 dim 1 must match mat2 dim 0

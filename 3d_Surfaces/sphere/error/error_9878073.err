@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "train_sphere_walking.py", line 177, in <module>
+    main()
+  File "train_sphere_walking.py", line 105, in main
+    fc_h_act = [nn.ELU, nn.ELU, nn.ELU],
+NameError: name 'nn' is not defined

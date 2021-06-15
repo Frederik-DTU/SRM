@@ -56,7 +56,7 @@ def parse_args():
     #Hyper-parameters
     parser.add_argument('--device', default='cpu', #'cuda:0'
                         type=str)
-    parser.add_argument('--epochs', default=1000,
+    parser.add_argument('--epochs', default=100000,
                         type=int)
     parser.add_argument('--T', default=10,
                         type=int)

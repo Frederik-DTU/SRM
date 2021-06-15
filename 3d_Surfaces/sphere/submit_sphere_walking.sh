@@ -16,12 +16,12 @@
 module swap cuda/8.0
 module swap cudnn/v7.0-prod-cuda8
 
-python3 train_sphere.py \
-    --data_name sphere \
+python3 train_sphere_walking.py \
+    --data_name sphere_walking \
     --save_step 5000 \
     --device cuda \
     --epochs 100000 \
-    --batch_size 100 \
+    --batch_size 50 \
     --workers 4 \
     --lr 0.0001  \
     --con_training 0 \

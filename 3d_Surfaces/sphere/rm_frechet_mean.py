@@ -54,7 +54,7 @@ def parse_args():
                         type=int)
     parser.add_argument('--lr', default=0.0001,
                         type=float)
-    parser.add_argument('--save_step', default=100,
+    parser.add_argument('--save_step', default=10,
                         type=int)
 
     #Continue training or not
@@ -99,7 +99,8 @@ def main():
     
     muz_linear, mug_linear = rm.compute_euclidean_mean(Z)
     
-    loss, muz_geodesic = rm.compute_frechet_mean(Z, muz_linear, epochs_geodesic=100000,
+    loss, muz_geodesic = rm.compute_frechet_mean_hpc(Z, muz_linear, save_path,
+													epochs_geodesic=100000,
                                                  epochs_frechet=args.epochs,
                                                  print_com = False,
                                                  save_step=args.save_step)

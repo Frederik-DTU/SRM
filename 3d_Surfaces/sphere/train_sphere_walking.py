@@ -29,6 +29,7 @@ sys.path.append(parentdir)
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
+from torch import nn
 import argparse
 import pandas as pd
 from scipy.io import loadmat
@@ -98,7 +99,14 @@ def main():
         
     N = len(trainloader.dataset)
 
-    model = VAE_3d().to(args.device) #Model used
+    model = VAE_3d(fc_h = [3, 50, 100, 50],
+                 fc_g = [2, 50, 100, 50, 3],
+                 fc_mu = [100, 2],
+                 fc_var = [100, 2],
+                 fc_h_act = [nn.ELU, nn.ELU, nn.ELU],
+                 fc_g_act = [nn.ELU, nn.ELU, nn.ELU, nn.Identity],
+                 fc_mu_act = [nn.Identity],
+                 fc_var_act = [nn.Sigmoid]).to(args.device) #Model used
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
