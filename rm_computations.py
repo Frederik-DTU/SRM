@@ -445,7 +445,7 @@ class rm_data:
         
         return E
     
-    def Log_map(self, z0, zT, epochs=10000, lr=1e-4, print_com = True, 
+    def Log_map(self, z0, zT, epochs=10000, lr=1e-3, print_com = True, 
                 save_step = 100, eps = 1e-6, T = 100):
         
         z_init = self.interpolate(z0, zT, T)
@@ -464,6 +464,18 @@ class rm_data:
         
         return v_z, v_g, z_geodesic, g_geodesic
     
+    def get_tangent_vector(self, u0, x0):
+        
+        shape = list(x0.shape)
+        shape = [1]+shape[1:]
+        x0 = x0.view(shape)
+        z0 = self.model_encoder(x0).view(-1)
+        jacobi_h = self.jacobian_mat(z0, x0)
+        jacobi_h = jacobi_h.view(len(z0.view(-1)), len(x0.view(-1)))
+        v_z = torch.mv(jacobi_h, u0.view(-1))
+        
+        return v_z
+    
     def linear_distance_matrix(self, Z, T=100):
         
         N = Z.shape[0]
@@ -481,7 +493,7 @@ class rm_data:
                 
         return dmat
     
-    def geodesic_distance_matrix(self, Z, epochs = 100000, lr = 1e-4, T=100):
+    def geodesic_distance_matrix(self, Z, epochs = 100000, lr = 1e-3, T=100):
         
         N = Z.shape[0]
         dmat = torch.zeros(N, N)
@@ -489,16 +501,39 @@ class rm_data:
         for i in range(0, N):
             print(f"Computing row {i+1}/{N}...")
             for j in range(i+1,N):
-                print(j)
                 Z_int = self.interpolate(Z[i], Z[j], T)
                 _, geodesic_z = self.compute_geodesic(Z_int, 
                                                       epochs = epochs,
-                                                      lr = 1e-3,
+                                                      lr = lr,
                                                       print_com = False)
                 L = self.arc_length(self.model_decoder(geodesic_z))
                 
                 dmat[i][j] = L.item()
                 dmat[j][i] = L.item()
+                
+        return dmat
+    
+    def geodesic_distance_matrix_hpc(self, Z, save_path, dmat, iter_start,
+                                     epochs = 100000, lr = 1e-3, T=100):
+        
+        N = Z.shape[0]
+        
+        for i in range(iter_start, N):
+            print(f"Computing row {i+1}/{N}...")
+            for j in range(i+1,N):
+                Z_int = self.interpolate(Z[i], Z[j], T)
+                _, geodesic_z = self.compute_geodesic(Z_int, 
+                                                      epochs = epochs,
+                                                      lr = lr,
+                                                      print_com = False)
+                L = self.arc_length(self.model_decoder(geodesic_z))
+                
+                dmat[i][j] = L.item()
+                dmat[j][i] = L.item()
+            torch.save({'z_batch': Z,
+                        'dmat': dmat,
+                        'iter_start': i}, 
+                       save_path)
                 
         return dmat
         
@@ -612,6 +647,58 @@ class rm_data:
                 
             if (epoch+1) % save_step == 0:
                 loss.append(L.item())
+                if print_com:
+                    print(f"Iteration {epoch+1}/{epochs_frechet} - L={L.item():.4f}")
+
+        
+        for name, param in model.named_parameters():
+            mu = param.data
+                
+        return loss, mu
+    
+    def compute_frechet_mean_hpc(self, X, mu_init, save_path, T=100, 
+                              epochs_geodesic = 100000, epochs_frechet = 100000,
+                              geodesic_lr = 1e-3, frechet_lr = 1e-3,
+                              print_com = True, save_step = 1,
+                              eps=1e-6):
+        
+        mu_init = mu_init.clone().detach().requires_grad_(True)
+        model = frechet_mean(mu_init, self.model_encoder, self.model_decoder, T,
+                             geodesic_epochs=epochs_geodesic,
+                             geodesic_lr = geodesic_lr,
+                             device = self.device).to(self.device) #Model used
+
+        optimizer = optim.Adam(model.parameters(), lr=frechet_lr)
+        
+        loss = []
+        L_prev = torch.tensor(0.0)
+        
+        muz_linear = mu_init
+        mug_linear = self.model_decoder(muz_linear)
+        for epoch in range(epochs_frechet):
+            L = model(X)
+            #optimizer.zero_grad(set_to_none=True) #Based on performance tuning
+            optimizer.zero_grad()
+            L.backward()
+            optimizer.step()
+            if np.abs(L.item()-L_prev)<eps:
+                loss.append(L.item())
+                break
+            else:
+                L_prev = L.item()
+                
+            if (epoch+1) % save_step == 0:
+                for name, param in model.named_parameters():
+                    muz_geodesic = param.data
+                mug_geodesic = self.model_decoder(muz_geodesic)
+                loss.append(L.item())
+                torch.save({'loss': loss,
+                             'muz_linear': muz_linear,
+                             'mug_linear': mug_linear,
+                             'muz_geodesic': muz_geodesic,
+                             'mug_geodesic': mug_geodesic,
+                             'T': T}, 
+                            save_path)
                 if print_com:
                     print(f"Iteration {epoch+1}/{epochs_frechet} - L={L.item():.4f}")
 

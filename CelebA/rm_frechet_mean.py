@@ -103,9 +103,11 @@ def main():
     Z = model.h(DATA)
     
     muz_linear, mug_linear = rm.compute_euclidean_mean(Z)
-    loss, muz_geodesic = rm.compute_frechet_mean(Z, muz_linear, T = args.T,
-                                                 epochs_geodesic = 10000,
-                                                 epochs_frechet = 100)
+    loss, muz_geodesic = rm.compute_frechet_mean_hpc(Z, muz_linear, args.save_path,
+                                                     T = args.T,
+                                                     epochs_geodesic = 10000,
+                                                     epochs_frechet = 100,
+                                                     save_step = 10)
     mug_geodesic = model.g(muz_geodesic)
     
     torch.save({'loss': loss,

@@ -28,7 +28,7 @@ import torch.optim as optim
 import argparse
 
 #Own files
-from rm_com import riemannian_data
+from rm_computations import rm_data
 from VAE_svhn import VAE_SVHN
 
 #%% Parser for command line arguments
@@ -36,26 +36,24 @@ from VAE_svhn import VAE_SVHN
 def parse_args():
     parser = argparse.ArgumentParser()
     # File-paths
-    parser.add_argument('--data_path', default='Data_groups/', 
+    parser.add_argument('--data_path', default='Data_groups/group1.pt', 
                         type=str)
-    parser.add_argument('--save_path', default='rm_computations/frechet_mean/', 
-                        type=str)
-    parser.add_argument('--group', default='group1.pt',
+    parser.add_argument('--save_path', default='rm_computations/frechet_group1.pt', 
                         type=str)
 
     #Hyper-parameters
     parser.add_argument('--device', default='cpu', #'cuda:0'
                         type=str)
-    parser.add_argument('--MAX_ITER', default=10,
-                        type=int)
-    parser.add_argument('--eps', default=0.1,
+    parser.add_argument('--epochs', default=10000,
                         type=int)
     parser.add_argument('--T', default=10,
                         type=int)
-    parser.add_argument('--alpha', default=1,
-                        type=float)
+    parser.add_argument('--batch_size', default=10,
+                        type=int)
     parser.add_argument('--lr', default=0.0002,
                         type=float)
+    parser.add_argument('--size', default=32,
+                        type=int)
     
     #Continue training or not
     parser.add_argument('--load_model_path', default='trained_models/main/svhn_epoch_50000.pt',
@@ -72,10 +70,10 @@ def main():
     #Arguments
     args = parse_args()
     
-    #Loading data
-    DATA = torch.load(args.data_path+args.group)
+    #Load
+    DATA = torch.load(args.data_path)[0:args.batch_size]
     
-    #Loading model
+    #Plotting the trained model
     model = VAE_SVHN().to(args.device) #Model used
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     
@@ -86,22 +84,25 @@ def main():
     model.eval()
     
     #Loading module
-    rm = riemannian_data(model.h, model.g, T=args.T, 
-                         eps = args.eps, MAX_ITER=args.MAX_ITER)
+    rm = rm_data(model.h, model.g, args.device)
     
-    Z = model.h(DATA)[0]
+    Z = model.h(DATA)
     
-    L, muz_init, mug_init, mu_z, mu_g = rm.get_frechet_mean(Z, alpha_mu = 0.1, 
-                                                            alpha_g = 0.1,
-                                                            print_conv=True)
+    muz_linear, mug_linear = rm.compute_euclidean_mean(Z)
+    loss, muz_geodesic = rm.compute_frechet_mean_hpc(Z, muz_linear, args.save_path,
+                                                     T = args.T,
+                                                     epochs_geodesic = args.epochs,
+                                                     epochs_frechet = 100,
+                                                     save_step = 10)
+    mug_geodesic = model.g(muz_geodesic)
     
-    checkpoint = args.save_path+args.group
-    torch.save({'L': L,
-                 'muz_init': muz_init,
-                 'mug_init': mug_init,
-                 'mu_z': mu_z,
-                 'mu_g': mu_g}, 
-                checkpoint)
+    torch.save({'loss': loss,
+                 'muz_linear': muz_linear,
+                 'mug_linear': mug_linear,
+                 'muz_geodesic': muz_geodesic,
+                 'mug_geodesic': mug_geodesic,
+                 'T': args.T}, 
+                args.save_path)
 
     return
 

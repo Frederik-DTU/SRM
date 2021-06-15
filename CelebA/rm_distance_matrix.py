@@ -56,7 +56,7 @@ def parse_args():
     #Hyper-parameters
     parser.add_argument('--device', default='cpu', #'cuda:0'
                         type=str)
-    parser.add_argument('--epochs', default=10000,
+    parser.add_argument('--epochs', default=1000,
                         type=int)
     parser.add_argument('--T', default=10,
                         type=int)
@@ -150,7 +150,11 @@ def main():
     Z = model.h(X)
     
     rm = rm_data(model.h, model.g, args.device)
-    dmat = rm.geodesic_distance_matrix(Z, epochs=args.epochs, T=args.T)
+    
+    N = Z.shape[0]
+    dmat = torch.zeros(N, N)
+    dmat = rm.geodesic_distance_matrix_hpc(Z, args.save_path, dmat, 0,
+                                           epochs=args.epochs, T=args.T)
     
     torch.save({'x_batch': X,
                 'z_batch': Z,
