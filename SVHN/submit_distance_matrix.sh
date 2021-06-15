@@ -19,14 +19,14 @@ module swap cudnn/v7.0-prod-cuda8
 python3 rm_distance_matrix.py \
     --data_path ../../Data/CelebA/celeba \
     --save_path rm_computations/dmat.pt \
-    --group1 Data_groups/group_blond_closed/ \
-    --group2 Data_groups/group_blond_open/ \
-    --group3 Data_groups/group_black_closed/ \
-    --group4 Data_groups/group_black_open/ \
+    --group1 Data_groups/group1.pt \
+    --group2 Data_groups/group2.pt \
+    --group3 Data_groups/group3.pt \
+    --group4 Data_groups/group4.pt \
     --device cpu \
-    --epochs 10000 \
+    --epochs 100000 \
     --T 10 \
     --batch_size 10 \
-    --lr 0.0001 \
-    --size 64 \
-    --load_model_path trained_models/main/celeba_epoch_6300.pt
+    --lr 0.0002 \
+    --size 32 \
+    --load_model_path trained_models/main/svhn_epoch_50000.pt

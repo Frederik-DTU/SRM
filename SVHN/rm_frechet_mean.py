@@ -91,8 +91,8 @@ def main():
     muz_linear, mug_linear = rm.compute_euclidean_mean(Z)
     loss, muz_geodesic = rm.compute_frechet_mean_hpc(Z, muz_linear, args.save_path,
                                                      T = args.T,
-                                                     epochs_geodesic = args.epochs,
-                                                     epochs_frechet = 100,
+                                                     epochs_geodesic = 100000,
+                                                     epochs_frechet = 100000,
                                                      save_step = 10)
     mug_geodesic = model.g(muz_geodesic)
     
