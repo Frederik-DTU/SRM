@@ -124,7 +124,7 @@ def main():
     a_angle = torch.dot(vac_z, vab_z)/(torch.norm(vac_z)*torch.norm(vab_z))
     b_angle = torch.dot(vbc_z, vba_z)/(torch.norm(vbc_z)*torch.norm(vba_z))
     c_angle = torch.dot(vca_z, vcb_z)/(torch.norm(vca_z)*torch.norm(vcb_z))
-    
+        
     torch.save({'gab_geodesic': gab_geodesic,
                 'gac_geodesic': gac_geodesic,
                 'gbc_geodesic': gbc_geodesic,
