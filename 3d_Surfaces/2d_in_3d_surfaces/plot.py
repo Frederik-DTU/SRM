@@ -214,11 +214,11 @@ Lab_geodesic = rm_rec.arc_length(checkpoint['gab_geodesic'])
 Lac_geodesic = rm_rec.arc_length(checkpoint['gac_geodesic'])
 Lc_geodesic = rm_rec.arc_length(checkpoint['gc_geodesic'])
 
-data_plot.plot_geodesic_in_X_3d(fun, #points.detach().numpy(),
+data_plot.plot_parallel_in_X_3d(fun, #points.detach().numpy(),
                           [-4,4],[-4,4],
-                          [gab_geodesic, 'Geodesic from a-b (L=%.4f)'%Lab_geodesic], 
-                          [gac_geodesic, 'Geodesic from a-c (L=%.4f)'%Lac_geodesic],
-                          [gc_geodesic, 'Geodesic from c (L=%.4f)'%Lc_geodesic])
+                          [gab_geodesic, 'Geodesic from a-b (L=%.4f)'%Lab_geodesic, gac_geodesic[0], 'a'], 
+                          [gac_geodesic, 'Geodesic from a-c (L=%.4f)'%Lac_geodesic, gab_geodesic[-1], 'b'],
+                          [gc_geodesic, 'Geodesic from c (L=%.4f)'%Lc_geodesic, gc_geodesic[0], 'c'])
 
 za = np.array([checkpoint['a'][0],checkpoint['a'][1]])
 zb = np.array([checkpoint['b'][0],checkpoint['b'][1]])
@@ -252,11 +252,11 @@ L_ab = rm.arc_length(g_ab)
 L_ac = rm.arc_length(g_ac)
 L_c = rm.arc_length(g_vc)
 
-data_plot.plot_geodesic_in_X_3d(fun, #points.detach().numpy(),
+data_plot.plot_parallel_in_X_3d(fun, #points.detach().numpy(),
                           [-4,4],[-4,4],
-                          [g_ab, 'Geodesic from a-b (L=%.4f)'%L_ab], 
-                          [g_ac, 'Geodesic from a-c (L=%.4f)'%L_ac],
-                          [g_vc, 'Geodesic from c (L=%.4f)'%L_c])
+                          [g_ab, 'Geodesic from a-b (L=%.4f)'%L_ab, a, 'a'], 
+                          [g_ac, 'Geodesic from a-c (L=%.4f)'%L_ac, b, 'b'],
+                          [g_vc, 'Geodesic from c (L=%.4f)'%L_c, c, 'c'])
 
 data_plot.plot_geodesic_in_Z_2d([zc_geodesic, 'Geodesic from c in Z'])
 

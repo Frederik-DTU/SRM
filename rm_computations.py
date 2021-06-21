@@ -284,17 +284,24 @@ class rm_geometry:
         
         if len(args)==1:
             G = args[0]
-            G_dif = (G[1:]-G[0:-1]).reshape(-1)
-            L = np.linalg.norm(G_dif)
+            T = G.shape[0]-1
+            for i in range(T):
+                g = (G[i+1]-G[i]).reshape(-1)
+                L += np.sqrt(np.dot(g, g))
         elif len(args)==3:
             G = args[0]
             g0 = args[1]
             gT = args[2]
-            L += np.linalg.norm((G[1]-g0).reshape(-1))
-            L += np.linalg.norm((gT-G[-1]).reshape(-1))
+            T = G.shape[0]+1
+            g = (G[0]-g0).reshape(-1)
+            L += np.sqrt(np.dot(g, g))
             
-            G_dif = (G[1:]-G[0:-1]).reshape(-1)
-            L += np.linalg.norm(G_dif, 'fro')
+            g = (gT-G[-1]).reshape(-1)
+            L += np.sqrt(np.dot(g, g))
+            
+            for i in range(T-2):
+                g = (G[i+1]-G[i]).reshape(-1)
+                L += np.sqrt(np.dot(g, g))
         
         return L
     
@@ -402,6 +409,33 @@ class rm_data:
         return Z
     
     def arc_length(self, *args):
+        
+        L = torch.tensor(0.0)
+        
+        if len(args)==1:
+            G = args[0]
+            T = G.shape[0]-1
+            for i in range(T):
+                g = (G[i+1]-G[i]).view(-1)
+                L += torch.sqrt(torch.dot(g, g))
+        elif len(args)==3:
+            G = args[0]
+            g0 = args[1]
+            gT = args[2]
+            T = G.shape[0]+1
+            g = (G[0]-g0).view(-1)
+            L += torch.sqrt(torch.dot(g, g))
+            
+            g = (gT-G[-1]).view(-1)
+            L += torch.sqrt(torch.dot(g, g))
+            
+            for i in range(T-2):
+                g = (G[i+1]-G[i]).view(-1)
+                L += torch.sqrt(torch.dot(g, g))
+        
+        return L
+    
+    def arc_length_wrong(self, *args):
         
         L = torch.tensor(0.0)
         
@@ -537,7 +571,7 @@ class rm_data:
                 
         return dmat
         
-    def compute_geodesic(self, z_init, epochs=100000, lr=1e-4, print_com = True, 
+    def compute_geodesic(self, z_init, epochs=100000, lr=1e-3, print_com = True, 
                          save_step = 100, eps = 1e-6):
         
         T = len(z_init)-1

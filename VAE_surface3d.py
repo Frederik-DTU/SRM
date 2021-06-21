@@ -177,7 +177,7 @@ class VAE_3d(nn.Module):
         
 #Simple test
 vae = VAE_3d()
-x = torch.tensor([[1,2,3], [4,5,6], [7, 8, 9]], dtype=torch.torch.float)
+x = torch.tensor([[1,2,3], [4,5,6], [7, 8, 9]], dtype=torch.float)
 z, x_hat, mu, var, kld, rec_loss, elbo = vae(x)
 
 

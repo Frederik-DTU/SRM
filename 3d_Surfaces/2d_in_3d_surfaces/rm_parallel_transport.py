@@ -39,14 +39,14 @@ from VAE_surface3d import VAE_3d
 
 def fun(x1, x2):
     
-    return x1, x2, x1*0
+    return x1, x2, x1**2+x2**2
 
 #%% Parser for command line arguments
 
 def parse_args():
     parser = argparse.ArgumentParser()
     # File-paths
-    parser.add_argument('--data_name', default='xy_plane', 
+    parser.add_argument('--data_name', default='paraboloid', 
                         type=str)
 
     #Hyper-parameters
@@ -54,7 +54,7 @@ def parse_args():
                         type=str)
     parser.add_argument('--epochs', default=100000,
                         type=int)
-    parser.add_argument('--T', default=10,
+    parser.add_argument('--T', default=5,
                         type=int)
     parser.add_argument('--batch_size', default=100,
                         type=int)

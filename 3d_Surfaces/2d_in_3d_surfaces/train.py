@@ -42,7 +42,7 @@ def parse_args():
     # File-paths
     parser.add_argument('--data_name', default='hyperbolic_paraboloid', 
                         type=str)
-    parser.add_argument('--save_step', default=100,
+    parser.add_argument('--save_step', default=1000,
                         type=int)
 
     #Hyper-parameters

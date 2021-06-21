@@ -224,6 +224,47 @@ class plot_3d_fun(object):
         
         return
     
+    def plot_parallel_in_X_3d(self, fun, x1_grid, x2_grid, *args):
+        
+        plt.figure(figsize=self.fig_size)
+        ax = plt.axes(projection="3d")
+        low_val = 1
+        
+        x1_grid = np.linspace(x1_grid[0], x1_grid[1], num = self.N)
+        x2_grid = np.linspace(x2_grid[0], x2_grid[1], num = self.N)
+        
+        X1, X2 = np.meshgrid(x1_grid, x2_grid)
+        X1, X2, X3 = fun(X1, X2)
+        ax.plot_surface(
+        X1, X2, X3,  rstride=1, cstride=1, color='c', alpha=0.2, linewidth=0)
+        
+        for arg in args:
+            lab = arg[1]
+            x = arg[0][:,0]
+            y = arg[0][:,1]
+            z = arg[0][:,2]
+            point = arg[2]
+            point_lab = arg[3]
+            ax.plot(x, y, z, label=lab)
+            ax.scatter3D(point[0], point[1], point[2], label=point_lab, s=50)
+            if np.max(z)>1e-3:
+                low_val = 0
+
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+        ax.set_zlabel('z')
+        
+        if low_val:
+            ax.set_zlim(-2, 2)
+        
+        ax.legend()
+                
+        plt.tight_layout()
+
+        plt.show()
+        
+        return
+    
     def plot_geodesic3d(self, fun, points, xscale = [-1,1], yscale=[-1,1], 
                                 zscale=[-1,1], *args):
         
