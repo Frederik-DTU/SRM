@@ -42,11 +42,11 @@ def parse_args():
     # File-paths
     parser.add_argument('--data_path', default="../../Data/CelebA/celeba", 
                         type=str)
-    parser.add_argument('--save_path', default='rm_computations/black_parallel_translation.pt', 
+    parser.add_argument('--save_path', default='rm_computations/blond_parallel_translation.pt', 
                         type=str)
-    parser.add_argument('--group_one', default='Data_groups/group_black_closed/', 
+    parser.add_argument('--group_one', default='Data_groups/group_blond_closed/', 
                         type=str)
-    parser.add_argument('--group_two', default='Data_groups/group_black_open/', 
+    parser.add_argument('--group_two', default='Data_groups/group_blond_open/', 
                         type=str)
 
     #Hyper-parameters

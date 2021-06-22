@@ -40,7 +40,7 @@ from VAE_surface3d import VAE_3d
 def parse_args():
     parser = argparse.ArgumentParser()
     # File-paths
-    parser.add_argument('--data_name', default='xy_plane', 
+    parser.add_argument('--data_name', default='paraboloid', 
                         type=str)
 
     #Hyper-parameters
@@ -50,7 +50,7 @@ def parse_args():
                         type=int)
     parser.add_argument('--T', default=100,
                         type=int)
-    parser.add_argument('--batch_size', default=10,
+    parser.add_argument('--batch_size', default=100,
                         type=int)
     parser.add_argument('--lr', default=0.0001,
                         type=float)
@@ -99,11 +99,16 @@ def main():
     
     muz_linear, mug_linear = rm.compute_euclidean_mean(Z)
     
+    #loss, muz_geodesic = rm.compute_frechet_mean(Z, muz_linear, epochs_geodesic=100000,
+    #                                             epochs_frechet=args.epochs,
+    #                                             print_com = True,
+    #                                             frechet_lr = 1e-3)
+    
     loss, muz_geodesic = rm.compute_frechet_mean(Z, muz_linear, epochs_geodesic=100000,
                                                  epochs_frechet=args.epochs,
                                                  print_com = True,
-                                                 save_step=args.save_step,
                                                  frechet_lr = 1e-3)
+    
     mug_geodesic = model.g(muz_geodesic)
     
     torch.save({'loss': loss,

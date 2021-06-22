@@ -43,9 +43,9 @@ def parse_args():
     # File-paths
     parser.add_argument('--data_path', default='Data/circle.csv', # 'Data/surface_R2.csv'
                         type=str)
-    parser.add_argument('--save_model_path', default='trained_models/main/circle', #'trained_models/surface_R2'
+    parser.add_argument('--save_model_path', default='trained_models/latent_dim_2/circle', #'trained_models/surface_R2'
                         type=str)
-    parser.add_argument('--save_step', default=100,
+    parser.add_argument('--save_step', default=10,
                         type=int)
 
     #Hyper-parameters
@@ -130,7 +130,8 @@ def main():
         for x in trainloader:
             #x = x.to(args.device) #If DATA is not saved to device
             _, x_hat, mu, var, kld, rec_loss, elbo = model(x)
-            optimizer.zero_grad(set_to_none=True) #Based on performance tuning
+            #optimizer.zero_grad(set_to_none=True) #Based on performance tuning
+            optimizer.zero_grad()
             elbo.backward()
             optimizer.step()
 
@@ -144,7 +145,7 @@ def main():
         train_loss_elbo.append(train_epoch_loss)
         train_loss_rec.append(running_loss_rec/N)
         train_loss_kld.append(running_loss_kld/N)
-        #print(f"Epoch {epoch+1}/{epochs} - loss: {train_epoch_loss:.4f}")
+        print(f"Epoch {epoch+1}/{epochs} - loss: {train_epoch_loss:.4f}")
 
 
         if (epoch+1) % args.save_step == 0:

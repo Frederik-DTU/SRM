@@ -103,7 +103,11 @@ load_path = 'rm_computations/'
 names = ['simple_geodesic1.pt', 'simple_geodesic2.pt', 'simple_geodesic3.pt']
 fig, ax = plt.subplots(3,1, figsize=(8,6))
 ax[0].set_title("Geodesic cuves and Linear interpolation between images")
+img_height = img_size+2
 for i in range(len(names)):
+    
+    tick_list_x = []
+    euc_length_x = []
     
     checkpoint = torch.load(load_path+names[i])
     
@@ -111,35 +115,60 @@ for i in range(len(names)):
     arc_length = checkpoint['arc_length']
     tick_list = checkpoint['tick_list']
     T = checkpoint['T']
-        
+    
+    for j in range(T+1):
+        tick_list_x.append(img_height/2+j*img_height)
+        euc_length_x.append('{0:.3f}'.format(torch.norm((G_plot[j]-G_plot[j+T+1]).view(-1)).item()))
+    
+    G_plot = checkpoint['G_plot']
     ax[i].imshow(vutils.make_grid(G_plot, padding=2, normalize=True, nrow=T+1).permute(1, 2, 0))
-    ax[i].axes.get_xaxis().set_visible(False)
+    #ax[i].axes.get_xaxis().set_visible(False)
     ax[i].set_yticks(tick_list)
-    ax[i].set_yticklabels(arc_length) 
+    ax[i].set_yticklabels(arc_length)
+    ax[i].set_xticks(tick_list_x)
+    ax[i].set_xticklabels(euc_length_x) 
 
 #%% Plotting Frechet mean for group
 
-data_path = 'Data_groups/group1.pt'
-frechet_path = 'rm_computations/frechet_group1.pt'
+data_path = ['Data_groups/group1.pt', 'Data_groups/group2.pt',
+             'Data_groups/group3.pt', 'Data_groups/group4.pt']
+frechet_path = ['rm_computations/frechet_group1.pt', 'rm_computations/frechet_group2.pt',
+                'rm_computations/frechet_group3.pt', 'rm_computations/frechet_group4.pt']
+names = ['Group 1', 'Group 2',
+         'Group 3', 'Group 4']
 img_size = 32
+batch_size = 10
+img_height = img_size+2
 
-DATA = torch.load(data_path)[0:100]
+tick_list_y = []
+for j in range(len(data_path)):
+    tick_list_y.append(img_height/2+j*img_height)
 
-plt.figure(figsize=(8,6))
-plt.subplot(1,2,1)
-plt.axis("off")
-plt.title("Original Images")
-plt.imshow(np.transpose(vutils.make_grid(DATA.to(device), padding=2, normalize=True, nrow=10).cpu(),(1,2,0)))
-
+DATA = torch.empty(1)
+for i in range(len(data_path)):
+    path = data_path[i]
+    
+    if i == 0:
+        DATA = torch.load(path)[0:batch_size]
+    else:
+        DATA = torch.cat((DATA,torch.load(path)[0:batch_size]), dim = 0)
+    
+fig, ax = plt.subplots(1,2,figsize=(8,6))
+ax[0].axes.get_xaxis().set_visible(False)
+ax[0].set_title("Original Images")
+ax[0].imshow(np.transpose(vutils.make_grid(DATA.to(device), padding=2, normalize=True, nrow=batch_size).cpu(),(1,2,0)))
+ax[0].set_yticks(tick_list_y)
+ax[0].set_yticklabels(names)
 
 rec = model(DATA)[1].detach()
 
 # Plot some training images
-plt.subplot(1,2,2)
-plt.axis("off")
-plt.title("Reconstruction Images")
-plt.imshow(np.transpose(vutils.make_grid(rec.to(device), padding=2, normalize=True, nrow=10).cpu(),(1,2,0)))
-plt.show()
+ax[1].axes.get_xaxis().set_visible(False)
+ax[1].set_title("Reconstructed Images")
+ax[1].imshow(np.transpose(vutils.make_grid(rec.to(device), padding=2, normalize=True, nrow=batch_size).cpu(),(1,2,0)))
+ax[1].set_yticks(tick_list_y)
+ax[1].set_yticklabels(names)
+
 
 frechet = torch.load(frechet_path)
 mug_linear = frechet['mug_linear'].view(3,img_size,img_size).detach()
@@ -163,7 +192,13 @@ plt.show()
 
 rm = rm_data(model.h, model.g, 'cpu')
 
-load_path = 'rm_computations/parallel_translation_1_2.pt'
+#load_path = 'rm_computations/parallel_translation_1_2.pt'
+load_path = 'rm_computations/parallel_translation_3_4.pt'
+
+img_size = 32
+batch_size = 10
+img_height = img_size+2
+
 checkpoint = torch.load(load_path)
 T = checkpoint['T']
 gab_geodesic = checkpoint['gab_geodesic']
@@ -176,21 +211,33 @@ L_ab = rm.arc_length(gab_geodesic)
 L_ac = rm.arc_length(gac_geodesic)
 L_c = rm.arc_length(gc_geodesic)
 L_linear_c = rm.arc_length(gc_linear)
-arc_length = ['a-b: {0:.4f}'.format(L_ab), 'a-c: {0:.4f}'.format(L_ac),
-              'c_g: {0:.4f}'.format(L_c), 'c_l: {0:.4f}'.format(L_linear_c)]
-tick_list = [img_size/2, img_size/2+img_size, img_size/2+img_size*2,
-             img_size/2+img_size*3]
+arc_length = ['a-b: {0:.4f}'.format(L_ab), 'a-c: {0:.4f}'.format(L_ac)]
+tick_list = [img_height/2, img_height/2+img_height]
 
-G_plot = torch.cat((gab_geodesic.detach(), gac_geodesic.detach(), 
-                    gc_geodesic.detach(), gc_linear.detach()), dim = 0)
+G_plot = torch.cat((gab_geodesic.detach(), gac_geodesic.detach()), dim = 0)
 
-fig, ax = plt.subplots(1,1, figsize=(8,6))
-ax.set_title("Geodesic cuves and Linear interpolation between images")    
-    
-ax.imshow(vutils.make_grid(G_plot, padding=2, normalize=True, nrow=T+1).permute(1, 2, 0))
-ax.axes.get_xaxis().set_visible(False)
-ax.set_yticks(tick_list)
-ax.set_yticklabels(arc_length) 
+fig, ax = plt.subplots(2,1,figsize=(8,6))
+ax[0].set_title("Geodesic cuves and Linear interpolation between images")    
+
+ax[0].imshow(vutils.make_grid(G_plot, padding=2, normalize=True, nrow=T+1).permute(1, 2, 0))
+ax[0].axes.get_xaxis().set_visible(False)
+ax[0].set_yticks(tick_list)
+ax[0].set_yticklabels(arc_length) 
+
+G_plot = torch.cat((gc_linear.detach(), gc_geodesic.detach()), dim = 0)
+arc_length = ['c_l: {0:.4f}'.format(L_linear_c), 'c_g: {0:.4f}'.format(L_c)]
+tick_list_x = []
+euc_length_x = []
+for j in range(T+1):
+        tick_list_x.append(img_height/2+j*img_height)
+        euc_length_x.append('{0:.3f}'.format(torch.norm((G_plot[j]-G_plot[j+T+1]).view(-1)).item()))
+
+ax[1].imshow(vutils.make_grid(G_plot, padding=2, normalize=True, nrow=T+1).permute(1, 2, 0))
+#ax[1].axes.get_xaxis().set_visible(False)
+ax[1].set_yticks(tick_list)
+ax[1].set_yticklabels(arc_length) 
+ax[1].set_xticks(tick_list_x)
+ax[1].set_xticklabels(euc_length_x) 
 
 #%% distance matrix
 rm = rm_data(model.h, model.g, 'cpu')

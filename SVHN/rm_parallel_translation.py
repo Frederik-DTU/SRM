@@ -39,11 +39,11 @@ def parse_args():
     # File-paths
     parser.add_argument('--data_path', default="../../Data/CelebA/celeba", 
                         type=str)
-    parser.add_argument('--save_path', default='rm_computations/parallel_translation_1_2.pt', 
+    parser.add_argument('--save_path', default='rm_computations/parallel_translation_3_4.pt', 
                         type=str)
-    parser.add_argument('--group1', default='Data_groups/group1.pt', 
+    parser.add_argument('--group1', default='Data_groups/group3.pt', 
                         type=str)
-    parser.add_argument('--group2', default='Data_groups/group2.pt', 
+    parser.add_argument('--group2', default='Data_groups/group4.pt', 
                         type=str)
 
     #Hyper-parameters

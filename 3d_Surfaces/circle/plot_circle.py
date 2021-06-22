@@ -49,10 +49,10 @@ def circle_fun(N = 1000, mu = np.array([1.,1.,1.]), r=1):
 #%% Loading data and model
 
 #Hyper-parameters
-epoch_load = '100000'
+epoch_load = '40000'
 lr = 0.0001
 device = 'cpu'
-latent_dim = 1
+latent_dim = 2
 
 #Data
 data_name = 'circle'
@@ -60,7 +60,7 @@ fun = circle_fun
 
 #Loading files
 data_path = 'Data/'+data_name+'.csv'
-file_model_save = 'trained_models/main/'+data_name+'_epoch_'+epoch_load+'.pt'
+file_model_save = 'trained_models/latent_dim_2/'+data_name+'_epoch_'+epoch_load+'.pt'
 data_plot = plot_3d_fun(N=100)
 
 #Loading data
@@ -121,7 +121,7 @@ data_plot.plot_1d_hist(std, 'Standard Deviation')
 
 #%% Plotting the Riemannian simple geodesics
 
-load_path = 'rm_computations/simple_geodesic/'
+load_path = 'rm_computations/simple_geodesic_2/'
 names = ['pi_2', 'pi', '5pi_4']
 
 for i in range(len(names)):
@@ -134,8 +134,8 @@ for i in range(len(names)):
     
     G_old = checkpoint['G_old'].detach().numpy()
     G_new = checkpoint['G_new'].detach().numpy()
-    L_old = checkpoint['L_old'].detach().numpy()
-    L_new = checkpoint['L_new'].detach().numpy()
+    L_old = checkpoint['L_old']
+    L_new = checkpoint['L_new']
     
     data_plot.plot_geodesic3d(circle_fun, points.detach().numpy(),
                               [0,2],[0,2],[0,2],

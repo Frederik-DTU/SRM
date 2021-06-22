@@ -39,14 +39,14 @@ from VAE_surface3d import VAE_3d
 
 def fun(x1, x2):
     
-    return x1, x2, x1**2-x2**2
+    return x1, x2, x1**2+x2**2
 
 #%% Parser for command line arguments
 
 def parse_args():
     parser = argparse.ArgumentParser()
     # File-paths
-    parser.add_argument('--data_name', default='hyperbolic_paraboloid', 
+    parser.add_argument('--data_name', default='paraboloid_hole', 
                         type=str)
 
     #Hyper-parameters
@@ -62,7 +62,7 @@ def parse_args():
                         type=float)
 
     #Continue training or not
-    parser.add_argument('--load_epoch', default='100000.pt',
+    parser.add_argument('--load_epoch', default='60000.pt',
                         type=str)
 
 
@@ -98,6 +98,8 @@ def main():
     #Latent coordinates
     zx = (torch.tensor([-3,-3])).float()
     zy = (torch.tensor([3,-3])).float()
+    #zx = (torch.tensor([-torch.sqrt(torch.tensor(2.5)),0])).float()
+    #zy = (torch.tensor([torch.sqrt(torch.tensor(2.5)),0])).float()
     
     #Coordinates on the manifold
     x = (torch.tensor(fun(zx[0],zx[1]))).float()

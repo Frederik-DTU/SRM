@@ -46,12 +46,12 @@ x = sym.Matrix([x1, x2])
 param_fun = sym.Matrix([x1, x2, x1**2+x2**2])
 
 #Data
-data_name = 'paraboloid'
+data_name = 'paraboloid_asymmetric'
 
 #%% Loading data and model
 
 #Hyper-parameters
-epoch_load = '100000'
+epoch_load = '45000'
 lr = 0.0001
 device = 'cpu'
 
@@ -142,6 +142,8 @@ L_geodesic = checkpoint['L_geodesic']
 
 zx = np.array([-3.0,-3.0])
 zy = np.array([3.0,-3.0])
+#zx = np.array([-np.sqrt(2.5),0])
+#zy = np.array([np.sqrt(2.5),0])
 y_init = np.zeros((4, 100))
 z_true_geodesic, _ = rm.bvp_geodesic(zx, zy, 100, y_init)
 z_true_geodesic = z_true_geodesic.transpose()
@@ -183,7 +185,7 @@ g1, g2, g3 = fun(true_mean[0], true_mean[1])
 g_true_mean = np.vstack((g1,g2,g3))
 
 data_plot.plot_means_with_true_surface3d(fun, data_batch, [-2,2], [-2,2],
-                              [-4,4],[-4,4],[-4,4],
+                              [-3,3],[-3,3],[-2,2],
                               [mug_linear.detach().numpy(), 'Linear mean'], 
                               [mug_geodesic.detach().numpy(), 'Approximated Frechét mean'],
                               [g_true_mean, 'True Frechet mean'])
