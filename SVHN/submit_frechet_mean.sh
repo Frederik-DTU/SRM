@@ -1,7 +1,7 @@
 #!/bin/sh
 #BSUB -q gpuv100
 #BSUB -gpu "num=1"
-#BSUB -J group4
+#BSUB -J group1
 #BSUB -n 1
 #BSUB -W 24:00
 #BSUB -R "rusage[mem=32GB]"
@@ -17,8 +17,8 @@ module swap cuda/8.0
 module swap cudnn/v7.0-prod-cuda8
 
 python3 rm_frechet_mean.py \
-    --data_path Data_groups/group4.pt \
-    --save_path rm_computations/frechet_group4.pt \
+    --data_path Data_groups/group1.pt \
+    --save_path rm_computations/frechet_group1.pt \
     --device cpu \
     --epochs 100000 \
     --T 10 \
