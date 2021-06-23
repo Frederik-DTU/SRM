@@ -46,12 +46,12 @@ x = sym.Matrix([x1, x2])
 param_fun = sym.Matrix([x1, x2, x1**2+x2**2])
 
 #Data
-data_name = 'paraboloid_asymmetric'
+data_name = 'paraboloid'
 
 #%% Loading data and model
 
 #Hyper-parameters
-epoch_load = '45000'
+epoch_load = '100000'
 lr = 0.0001
 device = 'cpu'
 
