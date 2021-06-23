@@ -16,7 +16,7 @@
 module swap cuda/8.0
 module swap cudnn/v7.0-prod-cuda8
 
-python3 train_celeba.py \
+python3 rm_frechet_mean.py \
     --data_name hyperbolic_paraboloid \
     --device cpu \
     --epochs 100000 \
