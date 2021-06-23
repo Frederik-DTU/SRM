@@ -169,24 +169,27 @@ ax[1].imshow(np.transpose(vutils.make_grid(rec.to(device), padding=2, normalize=
 ax[1].set_yticks(tick_list_y)
 ax[1].set_yticklabels(names)
 
+fig, ax = plt.subplots(1,1,figsize=(8,6))
+ax.axes.get_xaxis().set_visible(False)
+ax.set_title("Reconstructed Images")
+ax.imshow(np.transpose(vutils.make_grid(rec.to(device), padding=2, normalize=True, nrow=batch_size).cpu(),(1,2,0)))
+ax.set_yticks(tick_list_y)
+ax.set_yticklabels(names)
 
-frechet = torch.load(frechet_path)
-mug_linear = frechet['mug_linear'].view(3,img_size,img_size).detach()
-mug_geodesic = frechet['mug_geodesic'].view(3,img_size,img_size).detach()
-loss = frechet['loss']
-
-plt.figure(figsize=(8,6))
-plt.subplot(1,2,1)
-plt.axis("off")
-plt.title("Linear mean (L_sum=%.4f)"%loss[0])
-plt.imshow(mug_linear.permute(1, 2, 0))
-
-# Plot some training images
-plt.subplot(1,2,2)
-plt.axis("off")
-plt.title("Frechet mean (L_sum=%.4f)"%loss[-1])
-plt.imshow(mug_geodesic.permute(1, 2, 0))
-plt.show()
+fig, ax = plt.subplots(4,1,figsize=(8,6))
+ax[0].set_title("Fréchet Mean")
+tick_list_x = [img_height/2,img_height/2+img_height]
+for i in range(len(frechet_path)):
+    frechet = torch.load(frechet_path[i])
+    mug_linear = frechet['mug_linear'].view(1,3,img_size,img_size).detach()
+    mug_geodesic = frechet['mug_geodesic'].view(1,3,img_size,img_size).detach()
+    loss = frechet['loss']
+    G_plot = torch.cat((mug_linear.detach(), mug_geodesic.detach()), dim = 0)
+    ax[i].imshow(vutils.make_grid(G_plot, padding=2, normalize=True, nrow=2).permute(1, 2, 0))
+    l_sum = ['{0:.3f}'.format(loss[0]),'{0:.3f}'.format(loss[-1])]
+    ax[i].axes.get_yaxis().set_visible(False)
+    ax[i].set_xticks(tick_list_x)
+    ax[i].set_xticklabels(l_sum) 
 
 #%% Plotting Parallel Transport
 
@@ -245,10 +248,11 @@ rm = rm_data(model.h, model.g, 'cpu')
 load_path = 'rm_computations/dmat.pt'
 checkpoint = torch.load(load_path)
 x_batch = (checkpoint['x_batch'].view(checkpoint['x_batch'].shape[0],-1)).detach().numpy()
-z_batch = checkpoint['z_batch'].detach().numpy()
+z_batch = checkpoint['z_batch']
 dmat = checkpoint['dmat'].detach().numpy()
 X_names = checkpoint['X_names']
 dmat_linear = rm.linear_distance_matrix(z_batch, 10).detach().numpy()
+z_batch = z_batch.detach().numpy()
 
 X_names = ['Group1', 'Group2', 
            'Group3', 'Group4']

@@ -518,7 +518,6 @@ class rm_data:
         for i in range(0, N):
             print(f"Computing row {i+1}/{N}...")
             for j in range(i+1,N):
-                print(j)
                 z_linear = self.interpolate(Z[i], Z[j], T)
                 L = self.arc_length(self.model_decoder(z_linear))
                 
