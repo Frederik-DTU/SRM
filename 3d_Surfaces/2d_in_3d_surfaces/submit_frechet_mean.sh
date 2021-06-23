@@ -1,7 +1,7 @@
 #!/bin/sh
 #BSUB -q gpuv100
 #BSUB -gpu "num=1"
-#BSUB -J frechet_mean
+#BSUB -J frechet_mean_xy
 #BSUB -n 1
 #BSUB -W 24:00
 #BSUB -R "rusage[mem=32GB]"
@@ -17,7 +17,7 @@ module swap cuda/8.0
 module swap cudnn/v7.0-prod-cuda8
 
 python3 rm_frechet_mean.py \
-    --data_name hyperbolic_paraboloid \
+    --data_name xy_plane \
     --device cpu \
     --epochs 100000 \
     --T 100 \
