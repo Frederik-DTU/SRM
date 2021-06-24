@@ -28,6 +28,8 @@ import torch
 import torch.optim as optim
 import pandas as pd
 import numpy as np
+from torch import nn
+from scipy.io import loadmat
 
 #Own files
 from plot_dat import plot_3d_fun
@@ -47,12 +49,12 @@ def x3_sphere(x1, x2):
 #%% Loading data and model
 
 #Hyper-parameters
-epoch_load = '40000'
+epoch_load = '100000'
 lr = 0.0001
 device = 'cpu'
 
 #Parabolic data
-data_name = 'sphere'
+data_name = 'sphere_walking'
 fun = x3_sphere
 
 #Loading files
@@ -61,12 +63,25 @@ file_model_save = 'trained_models/main/'+data_name+'_epoch_'+epoch_load+'.pt'
 data_plot = plot_3d_fun(N=100)
 
 #Loading data
-df = pd.read_csv(data_path, index_col=0)
-DATA = torch.Tensor(df.values)
+#df = pd.read_csv(data_path, index_col=0)
+#DATA = torch.Tensor(df.values)
+#DATA = torch.transpose(DATA, 0, 1)
+
+data_path = 'Data/'+data_name+'.mat'
+knee_sphere = loadmat(data_path, squeeze_me=True)
+DATA = knee_sphere['data']
+DATA = torch.Tensor(DATA).to(device) #DATA = torch.Tensor(df.values)
 DATA = torch.transpose(DATA, 0, 1)
 
 #Loading model
-model = model = VAE_3d().to(device) #Model used
+model = VAE_3d(fc_h = [3, 50, 100, 50],
+                 fc_g = [2, 50, 100, 50, 3],
+                 fc_mu = [50, 2],
+                 fc_var = [50, 2],
+                 fc_h_act = [nn.ELU, nn.ELU, nn.ELU],
+                 fc_g_act = [nn.ELU, nn.ELU, nn.ELU, nn.Identity],
+                 fc_mu_act = [nn.Identity],
+                 fc_var_act = [nn.Sigmoid]).to(device) #Model used
 optimizer = optim.Adam(model.parameters(), lr=lr)
 
 checkpoint = torch.load(file_model_save, map_location=device)

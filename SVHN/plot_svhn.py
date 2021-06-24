@@ -293,3 +293,69 @@ p = sns.jointplot(data=df, x="x1", y="x2", hue="group")
 p.fig.suptitle("Euclidean Distances")
 p.fig.tight_layout()
 p.fig.subplots_adjust(top=0.95) # Reduce plot to make room 
+
+R2_geodesic, _, _ = rm.compute_R2_mat(dmat, range(0,10), range(10,20), range(20,30), range(30,40))
+R2_linear, _, _ = rm.compute_R2_mat(dmat_linear, range(0,10), range(10,20), range(20,30), range(30,40))
+
+x_batch = (checkpoint['x_batch'].view(checkpoint['x_batch'].shape[0],-1))
+dmat_euclidean = rm.euclidean_distance_matrix(x_batch)
+
+R2_euclidean, _, _ = rm.compute_R2_mat(dmat_euclidean, range(0,10), range(10,20), range(20,30), range(30,40))
+
+#%% Geodesic Triangle
+
+rm = rm_data(model.h, model.g, 'cpu')
+
+load_path = 'rm_computations/triangle_simple.pt'
+load_path = 'rm_computations/triangle_same_length.pt'
+
+img_size = 32
+batch_size = 10
+img_height = img_size+2
+
+checkpoint = torch.load(load_path)
+gab_geodesic = checkpoint['gab_geodesic']
+gac_geodesic = checkpoint['gac_geodesic']
+gbc_geodesic = checkpoint['gbc_geodesic']
+L_ab = checkpoint['L_ab']
+L_ac = checkpoint['L_ac']
+L_bc = checkpoint['L_bc']
+
+a_angle = checkpoint['a_angle']
+b_angle = checkpoint['b_angle']
+c_angle = checkpoint['c_angle']
+sum_val = (a_angle+b_angle+c_angle)
+
+gab_linear = checkpoint['gab_linear']
+gac_linear = checkpoint['gac_linear']
+gbc_linear = checkpoint['gbc_linear']
+L_ab_linear = checkpoint['L_ab_linear']
+L_ac_linear = checkpoint['L_ac_linear']
+L_bc_linear = checkpoint['L_bc_linear']
+
+fig, ax = plt.subplots(3,1, figsize=(8,6))
+ax[0].set_title("Geodesic Triangle (Angle Sum = {0:.4f})".format(sum_val))
+img_height = img_size+2
+tick_list = [img_height/2,img_height/2+img_height]
+arc_length = [['a-b {0:.4f}'.format(L_ab_linear), 'a-b {0:.4f}'.format(L_ab)], 
+              ['a-c {0:.4f}'.format(L_ac_linear), 'a-c {0:.4f}'.format(L_ac)],
+              ['b-c {0:.4f}'.format(L_bc_linear), 'b-c {0:.4f}'.format(L_bc)]]
+G_plot = [torch.cat((gab_linear.detach(), gab_geodesic.detach()), dim=0),
+          torch.cat((gac_linear.detach(), gac_geodesic.detach()), dim=0),
+          torch.cat((gbc_linear.detach(), gbc_geodesic.detach()), dim=0)]
+T = 10
+for i in range(len(arc_length)):
+    
+    tick_list_x = []
+    euc_length_x = []
+    
+    for j in range(T+1):
+        tick_list_x.append(img_height/2+j*img_height)
+        euc_length_x.append('{0:.3f}'.format(torch.norm((G_plot[i][j]-G_plot[i][j+T+1]).view(-1)).item()))
+    
+    ax[i].imshow(vutils.make_grid(G_plot[i], padding=2, normalize=True, nrow=T+1).permute(1, 2, 0))
+    #ax[i].axes.get_xaxis().set_visible(False)
+    ax[i].set_yticks(tick_list)
+    ax[i].set_yticklabels(arc_length[i])
+    ax[i].set_xticks(tick_list_x)
+    ax[i].set_xticklabels(euc_length_x) 

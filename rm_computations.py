@@ -526,6 +526,21 @@ class rm_data:
                 
         return dmat
     
+    def euclidean_distance_matrix(self, X):
+        
+        N = X.shape[0]
+        dmat = torch.zeros(N, N)
+        
+        for i in range(0, N):
+            print(f"Computing row {i+1}/{N}...")
+            for j in range(i+1,N):
+                L = torch.sqrt(torch.dot(X[i]-X[j],X[i]-X[j]))
+                
+                dmat[i][j] = L.item()
+                dmat[j][i] = L.item()
+                
+        return dmat
+    
     def geodesic_distance_matrix(self, Z, epochs = 100000, lr = 1e-3, T=100):
         
         N = Z.shape[0]
@@ -849,6 +864,46 @@ class rm_data:
             grad_y[i] = 0.0
             
         return torch.stack(jac).reshape(y.shape+x.shape)
+    
+    def compute_R2_mat(self, dmat, *args):
+        
+        sum_idx = 0.0
+        sum_total = 0.0
+        
+        for arg in args:
+            idx = arg
+            for i in idx:
+                for j in idx:
+                    sum_idx += dmat[i,j]
+        
+        N = dmat.shape[0]
+        for i in range(N):
+            for j in range(N):
+                sum_total += dmat[i,j]
+        
+        R2 = 1-sum_idx/sum_total
+        
+        return R2, sum_total, sum_idx
+    
+    def compute_R2_mat_alternative(self, dmat, *args):
+        
+        sum_idx = 0.0
+        sum_total = 0.0
+        
+        for arg in args:
+            idx = arg
+            for i in idx:
+                for j in idx[i+1:]:
+                    sum_idx += dmat[i,j]
+        
+        N = dmat.shape[0]
+        for i in range(N):
+            for j in range(i+1,N):
+                sum_total += dmat[i,j]
+        
+        R2 = 1-sum_idx/sum_total
+        
+        return R2, sum_total, sum_idx
                 
 
 class geodesic_path_al1(nn.Module):
