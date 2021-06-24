@@ -50,7 +50,7 @@ def parse_args():
                         type=int)
     parser.add_argument('--T', default=100,
                         type=int)
-    parser.add_argument('--batch_size', default=100,
+    parser.add_argument('--batch_size', default=10,
                         type=int)
     parser.add_argument('--lr', default=0.0001,
                         type=float)

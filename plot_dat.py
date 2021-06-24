@@ -224,6 +224,46 @@ class plot_3d_fun(object):
         
         return
     
+    def plot_geodesic2_in_X_3d(self, *args):
+        
+        plt.figure(figsize=self.fig_size)
+        ax = plt.axes(projection="3d")
+        
+        r = 1
+        pi = np.pi
+        cos = np.cos
+        sin = np.sin
+        phi, theta = np.mgrid[0.0:pi:100j, 0.0:2.0*pi:100j]
+        x = r*sin(phi)*cos(theta)
+        y = r*sin(phi)*sin(theta)
+        z = r*cos(phi)
+        
+        ax.plot_surface(
+            x, y, z,  rstride=1, cstride=1, color='c', alpha=0.1, linewidth=0)
+        
+        for arg in args:
+            lab = arg[1]
+            x = arg[0][:,0]
+            y = arg[0][:,1]
+            z = arg[0][:,2]
+            ax.plot(x, y, z, label=lab)
+
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+        ax.set_zlabel('z')
+        
+        ax.set_xlim(-2,2)
+        ax.set_ylim(-2,2)
+        ax.set_zlim(-2,2)
+        
+        ax.legend()
+                
+        plt.tight_layout()
+
+        plt.show()
+        
+        return
+    
     def plot_parallel_in_X_3d(self, fun, x1_grid, x2_grid, *args):
         
         plt.figure(figsize=self.fig_size)

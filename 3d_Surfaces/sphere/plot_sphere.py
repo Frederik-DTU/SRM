@@ -49,12 +49,12 @@ def x3_sphere(x1, x2):
 #%% Loading data and model
 
 #Hyper-parameters
-epoch_load = '100000'
+epoch_load = '15000'
 lr = 0.0001
 device = 'cpu'
 
 #Parabolic data
-data_name = 'sphere_walking'
+data_name = 'sphere'
 fun = x3_sphere
 
 #Loading files
@@ -63,15 +63,15 @@ file_model_save = 'trained_models/main/'+data_name+'_epoch_'+epoch_load+'.pt'
 data_plot = plot_3d_fun(N=100)
 
 #Loading data
-#df = pd.read_csv(data_path, index_col=0)
-#DATA = torch.Tensor(df.values)
-#DATA = torch.transpose(DATA, 0, 1)
-
-data_path = 'Data/'+data_name+'.mat'
-knee_sphere = loadmat(data_path, squeeze_me=True)
-DATA = knee_sphere['data']
-DATA = torch.Tensor(DATA).to(device) #DATA = torch.Tensor(df.values)
+df = pd.read_csv(data_path, index_col=0)
+DATA = torch.Tensor(df.values)
 DATA = torch.transpose(DATA, 0, 1)
+
+#data_path = 'Data/'+data_name+'.mat'
+#knee_sphere = loadmat(data_path, squeeze_me=True)
+#DATA = knee_sphere['data']
+#DATA = torch.Tensor(DATA).to(device) #DATA = torch.Tensor(df.values)
+#DATA = torch.transpose(DATA, 0, 1)
 
 #Loading model
 model = VAE_3d(fc_h = [3, 50, 100, 50],
@@ -136,27 +136,30 @@ data_plot.plot_dat_in_Z_2d([std, 'std'])
 
 #%% Plotting the Riemannian simple geodesics
 
-load_path = 'rm_computations/simple_geodesic/simple_geodesic.pt'
+load_path = 'rm_computations/'+'/simple_geodesic.pt'
 
 checkpoint = torch.load(load_path, map_location=device)
-gx = checkpoint['gx']
-gy = checkpoint['gy']
+g_geodesic = checkpoint['g_geodesic']
+gx = g_geodesic[0]
+gy = g_geodesic[-1]
 points = torch.transpose(torch.cat((gx.view(-1,1), gy.view(-1,1)), dim = 1), 0, 1)
 
-Z_old = checkpoint['Z_old'].detach().numpy()
-Z_new = checkpoint['Z_new'].detach().numpy()
-G_old = checkpoint['G_old'].detach().numpy()
-G_new = checkpoint['G_new'].detach().numpy()
-L_old = checkpoint['L_old']
-L_new = checkpoint['L_new']
+z_linear = checkpoint['z_linear'].detach().numpy()
+z_geodesic = checkpoint['z_geodesic'].detach().numpy()
+g_linear = checkpoint['g_linear'].detach().numpy()
+g_geodesic = g_geodesic.detach().numpy()
+L_linear = checkpoint['L_linear']
+L_geodesic = checkpoint['L_geodesic']
 
-data_plot.plot_geodesic_in_X_3d(fun, #points.detach().numpy(),
-                          [-4,4],[-4,4],
-                          [G_old, 'Interpolation (L=%.4f)'%L_old], 
-                          [G_new, 'Approximated Geodesic (L=%.4f)'%L_new])
+zx = np.array([-3.0,-3.0])
+zy = np.array([3.0,-3.0])
 
-data_plot.plot_geodesic_in_Z_2d([Z_old, 'Interpolation (L=%.4f)'%L_old], 
-                          [Z_new, 'Approximated Geodesic (L=%.4f)'%L_new])
+data_plot.plot_geodesic2_in_X_3d(
+                          [g_linear, 'Interpolation (L=%.4f)'%L_linear], 
+                          [g_geodesic, 'Approximated Geodesic (L=%.4f)'%L_geodesic])
+
+data_plot.plot_geodesic_in_Z_2d([z_linear, 'Interpolation (L=%.4f)'%L_linear], 
+                          [z_geodesic, 'Approximated Geodesic (L=%.4f)'%L_geodesic])
 
 #%% Plotting Frechet mean
 

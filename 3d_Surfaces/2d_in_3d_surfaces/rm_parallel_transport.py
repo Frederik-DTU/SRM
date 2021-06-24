@@ -29,6 +29,7 @@ import torch.optim as optim
 import pandas as pd
 import math
 import argparse
+import numpy as np
 pi = math.pi
 
 #Own files
@@ -36,6 +37,13 @@ from rm_computations import rm_data
 from VAE_surface3d import VAE_3d
 
 #%% Fun
+
+
+#def fun(x1, x2):
+#    
+#    theta = np.pi/4
+#    
+#    return x1, x2*np.cos(theta), x2*np.sin(theta)
 
 def fun(x1, x2):
     
@@ -54,7 +62,7 @@ def parse_args():
                         type=str)
     parser.add_argument('--epochs', default=100000,
                         type=int)
-    parser.add_argument('--T', default=5,
+    parser.add_argument('--T', default=10,
                         type=int)
     parser.add_argument('--batch_size', default=100,
                         type=int)

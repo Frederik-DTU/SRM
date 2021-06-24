@@ -27,6 +27,7 @@ sys.path.append(parentdir)
 import torch
 import torch.optim as optim
 import pandas as pd
+from torch import nn
 import math
 import argparse
 pi = math.pi
@@ -62,7 +63,7 @@ def parse_args():
                         type=float)
 
     #Continue training or not
-    parser.add_argument('--load_epoch', default='100000.pt',
+    parser.add_argument('--load_epoch', default='15000.pt',
                         type=str)
 
 
@@ -78,7 +79,7 @@ def main():
     
     #Loading data
     data_path = 'Data/'+args.data_name+'.csv'
-    load_path = 'trained_models/'+args.data_name+'_epoch_'+args.load_epoch
+    load_path = 'trained_models/main/'+args.data_name+'_epoch_'+args.load_epoch
     save_path = 'rm_computations/'+'simple_geodesic.pt'
     
     df = pd.read_csv(data_path, index_col=0)
@@ -86,7 +87,14 @@ def main():
     DATA = torch.transpose(DATA, 0, 1)
     
     #Loading model
-    model = VAE_3d().to(args.device) #Model used
+    model = VAE_3d(fc_h = [3, 50, 100, 50],
+                 fc_g = [2, 50, 100, 50, 3],
+                 fc_mu = [50, 2],
+                 fc_var = [50, 2],
+                 fc_h_act = [nn.ELU, nn.ELU, nn.ELU],
+                 fc_g_act = [nn.ELU, nn.ELU, nn.ELU, nn.Identity],
+                 fc_mu_act = [nn.Identity],
+                 fc_var_act = [nn.Sigmoid]).to(args.device) #Model used
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     
     checkpoint = torch.load(load_path, map_location=args.device)
@@ -96,8 +104,8 @@ def main():
     model.eval()
     
     #Latent coordinates
-    zx = (torch.tensor([-3,-3])).float()
-    zy = (torch.tensor([3,-3])).float()
+    zx = (torch.tensor([-pi/4,pi/4])).float()
+    zy = (torch.tensor([pi/4,pi/4])).float()
     
     #Coordinates on the manifold
     x = (torch.tensor(fun(zx[0],zx[1]))).float()

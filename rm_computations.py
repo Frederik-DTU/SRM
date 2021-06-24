@@ -150,7 +150,7 @@ class rm_geometry:
         
         gamma = np.array(y[0:self.dim])
         gamma_diff = np.array(y[self.dim:])
-    
+        
         chris = np.array(self.christoffel(*gamma), dtype=object)
             
         dgamma = gamma_diff
@@ -163,6 +163,45 @@ class rm_geometry:
             dgamma_diff[k] = -dgamma_diff[k]
     
         return np.concatenate((dgamma, dgamma_diff))
+    
+    def get_geodesic_equation_2d(self):
+        
+        gamma = sym.symbols('gamma1 gamma2')
+        gamma_diff = sym.symbols('gamma_diff1 gamma_diff2')
+        christoffel = self.get_christoffel_symbols()
+        christoffel = sym.lambdify(self.x, christoffel, modules='numpy')
+        chris = christoffel(*gamma)
+        eq = []
+        
+        for k in range(self.dim):
+            eq1 = 0.0
+            for i in range(self.dim):
+                for j in range(self.dim):
+                    eq1 += gamma_diff[i]*gamma_diff[j]*chris[i][j][k]
+                
+            eq.append(sym.simplify(eq1))
+    
+        return eq
+    
+    def get_parallel_transport_equation_2d(self):
+        
+        v = sym.symbols('v1 v2')
+        gamma = sym.symbols('gamma1 gamma2')
+        gamma_diff = sym.symbols('gamma_diff1 gamma_diff2')
+        
+        christoffel = self.get_christoffel_symbols()
+        christoffel = sym.lambdify(self.x, christoffel, modules='numpy')
+        chris = christoffel(*gamma)
+        
+        eq = []
+        for k in range(self.dim):
+            eq1 = 0.0
+            for i in range(self.dim):
+                for j in range(self.dim):
+                    eq1 += v[j]*gamma_diff[i]*chris[i][j][k]
+            eq.append(sym.simplify(eq1))
+        
+        return eq
     
     def __geodesic_equation_bc(self, ya, yb):
         
@@ -345,11 +384,16 @@ class rm_geometry:
 """ 
 x1, x2 = sym.symbols('x1 x2')
 x = sym.Matrix([x1, x2])
-param_fun = sym.Matrix([x1, x2, x1**2-x2**2])
+param_fun = sym.Matrix([x1, x2, 0])
         
 test = rm_geometry()
-test.compute_mmf(param_fun, x)
-test.get_christoffel_symbols()
+G = sym.simplify(test.compute_mmf(param_fun, x))
+G_inv = sym.simplify(test.get_immf())
+chris = sym.simplify(test.get_christoffel_symbols())
+geodesic_equation = test.get_geodesic_equation_2d()
+parallel_equation = test.get_parallel_transport_equation_2d()
+
+
 G_inv = np.array(test.get_immf())
 G = np.array(test.get_mmf())
 

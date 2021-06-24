@@ -29,6 +29,7 @@ import torch.optim as optim
 import pandas as pd
 import math
 import argparse
+import numpy as np
 pi = math.pi
 
 #Own files
@@ -41,12 +42,18 @@ def fun(x1, x2):
     
     return x1, x2, x1**2+x2**2
 
+#def fun(x1, x2):
+#    
+#    theta = np.pi/4
+#    
+#    return x1, x2*np.cos(theta), x2*np.sin(theta)
+
 #%% Parser for command line arguments
 
 def parse_args():
     parser = argparse.ArgumentParser()
     # File-paths
-    parser.add_argument('--data_name', default='paraboloid_hole', 
+    parser.add_argument('--data_name', default='paraboloid', 
                         type=str)
 
     #Hyper-parameters
@@ -62,7 +69,7 @@ def parse_args():
                         type=float)
 
     #Continue training or not
-    parser.add_argument('--load_epoch', default='60000.pt',
+    parser.add_argument('--load_epoch', default='100000.pt',
                         type=str)
 
 

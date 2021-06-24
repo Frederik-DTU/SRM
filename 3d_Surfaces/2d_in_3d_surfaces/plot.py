@@ -41,17 +41,24 @@ def fun(x1, x2):
     
     return x1, x2, x1**2+x2**2
 
+def fun(x1, x2):
+    
+    theta = np.pi/4
+    
+    return x1, x2*np.cos(theta), x2*np.sin(theta)
+
+theta = np.pi/4
 x1, x2 = sym.symbols('x1 x2')
 x = sym.Matrix([x1, x2])
-param_fun = sym.Matrix([x1, x2, x1**2+x2**2])
+param_fun = sym.Matrix([x1, x2*sym.cos(theta), x1*sym.sin(theta)])
 
 #Data
-data_name = 'paraboloid'
+data_name = 'xy_plane_rotated'
 
 #%% Loading data and model
 
 #Hyper-parameters
-epoch_load = '100000'
+epoch_load = '5000'
 lr = 0.0001
 device = 'cpu'
 
